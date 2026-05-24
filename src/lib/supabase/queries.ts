@@ -54,6 +54,66 @@ export async function getSermonSeries(): Promise<SermonSeries[]> {
   }));
 }
 
+export async function getAdminSermonSeries(): Promise<SermonSeries[]> {
+  const supabase = await createClient();
+
+  if (!supabase) {
+    return fallbackSermonSeries;
+  }
+
+  const { data, error } = await supabase
+    .from("sermon_series")
+    .select("*")
+    .order("start_date", { ascending: false })
+    .order("sort_order", { ascending: true });
+
+  if (error || !data?.length) {
+    return [];
+  }
+
+  return data.map((series) => ({
+    id: series.id,
+    name: series.name,
+    dateLabel: series.date_label,
+    startDate: series.start_date,
+    endDate: series.end_date,
+    imageUrl: series.image_url,
+    youtubePlaylistUrl: series.youtube_playlist_url,
+    isPublished: series.is_published,
+  }));
+}
+
+export async function getSermonSeriesById(
+  id: string,
+): Promise<SermonSeries | null> {
+  const supabase = await createClient();
+
+  if (!supabase) {
+    return fallbackSermonSeries.find((series) => series.id === id) ?? null;
+  }
+
+  const { data, error } = await supabase
+    .from("sermon_series")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return {
+    id: data.id,
+    name: data.name,
+    dateLabel: data.date_label,
+    startDate: data.start_date,
+    endDate: data.end_date,
+    imageUrl: data.image_url,
+    youtubePlaylistUrl: data.youtube_playlist_url,
+    isPublished: data.is_published,
+  };
+}
+
 export async function getHeroSlides(): Promise<HeroSlide[]> {
   const supabase = await createClient();
 

@@ -78,7 +78,7 @@ Newest items found:
 - Be Generous, 11/2/2025-11/30/2025
 - When Necessary, 9/28/2025-10/26/2025
 
-Several older series run back through January 2022. The initial code includes a small fallback subset; full migration should be entered through Supabase admin.
+The rebuild includes all 51 sermon cards found on the current Watch page as fallback content. To populate Supabase directly, run `supabase/seed-sermon-series.sql` after `supabase/schema.sql`.
 
 ## External Links
 

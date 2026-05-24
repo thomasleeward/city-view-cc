@@ -13,6 +13,7 @@ export const metadata: Metadata = {
 export default async function SermonArchivePage() {
   const series = await getSermonSeries();
   const latest = series[0];
+  const archiveSeries = latest ? series.slice(1) : series;
 
   return (
     <>
@@ -40,7 +41,7 @@ export default async function SermonArchivePage() {
           </div>
         )}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {series.map((item) => (
+          {archiveSeries.map((item) => (
             <SermonSeriesCard key={item.id} series={item} />
           ))}
         </div>

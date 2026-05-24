@@ -48,13 +48,14 @@ Planning Center TODOs are intentionally isolated behind these URL placeholders u
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the SQL editor.
-3. Confirm storage buckets exist:
+3. Optional but recommended: run `supabase/seed-sermon-series.sql` to import the current sermon archive from the old website.
+4. Confirm storage buckets exist:
    - `sermon-images`
    - `hero-images`
-4. Create the first admin user in Supabase Auth.
-5. Confirm the `profiles` row for that user has `role = 'admin'`.
-6. Add env vars to `.env.local`.
-7. Visit `/admin/login`.
+5. Create the first admin user in Supabase Auth.
+6. Confirm the `profiles` row for that user has `role = 'admin'`.
+7. Add env vars to `.env.local`.
+8. Visit `/admin/login`.
 
 Current admin features:
 
