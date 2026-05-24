@@ -64,7 +64,7 @@ export default async function Home() {
               key={card.title}
               className="overflow-hidden rounded-lg bg-white shadow-sm"
             >
-              <div className="relative aspect-[4/3]">
+              <div className="relative aspect-video">
                 <Image
                   src={card.imageUrl}
                   alt=""

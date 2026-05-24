@@ -33,7 +33,7 @@ export default function GetConnectedPage() {
       <Section title="Kids & Students" eyebrow="Families">
         <div className="grid gap-8 lg:grid-cols-2">
           <article className="rounded-lg bg-white p-5 shadow-sm">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md">
+            <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
                 src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fe6e1507d47e1b4771ee3e.jpeg"
                 alt=""
@@ -50,7 +50,7 @@ export default function GetConnectedPage() {
             </p>
           </article>
           <article className="rounded-lg bg-white p-5 shadow-sm">
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md">
+            <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
                 src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fe6db3f5202af7f09f1ae4.jpeg"
                 alt=""

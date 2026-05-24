@@ -19,7 +19,7 @@ export default function AboutPage() {
       />
       <Section title="Our Story">
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-lg">
+          <div className="relative aspect-video overflow-hidden rounded-lg">
             <Image
               src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fcb98770c46d457a17882c.jpeg"
               alt=""
