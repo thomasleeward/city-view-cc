@@ -85,12 +85,18 @@ export default async function Home() {
         </div>
       </Section>
 
-      <Section
-        className="bg-green text-white"
-        eyebrow="Current Series"
-        title="Catch up on recent messages."
-        description="Browse current and past sermon series from City View."
-      >
+      <Section className="bg-green text-white">
+        <div className="mb-10 max-w-4xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
+            Current Series
+          </p>
+          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
+            Catch up on recent messages.
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-white/80">
+            Browse current and past sermon series from City View.
+          </p>
+        </div>
         <div className="grid gap-5 md:grid-cols-3">
           {latestSeries.map((series) => (
             <SermonSeriesCard key={series.id} series={series} />

@@ -43,6 +43,14 @@ export async function createHeroSlide(formData: FormData) {
     redirect("/admin/hero?error=service-role");
   }
 
+  const sortOrderInput = Number(formData.get("sort_order"));
+  const { data: latestSlide } = await supabase
+    .from("hero_slides")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   const payload = {
     headline: "Hero background image",
     subheadline: null,
@@ -51,6 +59,9 @@ export async function createHeroSlide(formData: FormData) {
     cta_label: null,
     cta_href: null,
     is_active: formData.get("is_active") === "on",
+    sort_order: Number.isFinite(sortOrderInput)
+      ? sortOrderInput
+      : (latestSlide?.sort_order ?? 0) + 10,
   };
 
   const { error } = await supabase.from("hero_slides").insert(payload);
@@ -62,6 +73,35 @@ export async function createHeroSlide(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/admin/hero");
   redirect("/admin/hero?saved=image");
+}
+
+export async function updateHeroSlideOrder(formData: FormData) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    redirect("/admin/hero?error=service-role");
+  }
+
+  const id = String(formData.get("id") || "");
+  const sortOrder = Number(formData.get("sort_order"));
+
+  if (!id || !Number.isFinite(sortOrder)) {
+    redirect("/admin/hero?error=invalid-order");
+  }
+
+  const { error } = await supabase
+    .from("hero_slides")
+    .update({ sort_order: sortOrder })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/admin/hero?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/hero");
+  redirect("/admin/hero?saved=order");
 }
 
 export async function removeHeroSlide(formData: FormData) {

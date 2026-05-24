@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import {
   createHeroSlide,
   removeHeroSlide,
+  updateHeroSlideOrder,
   updateHeroContent,
 } from "@/app/admin/hero/actions";
 import { requireAdmin } from "@/lib/supabase/auth";
@@ -100,6 +101,15 @@ export default async function AdminHeroPage() {
                 type="url"
               />
             </label>
+            <label className="text-sm font-semibold text-ink">
+              Display order
+              <input
+                className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                name="sort_order"
+                placeholder="Leave blank to add to the end"
+                type="number"
+              />
+            </label>
             <label className="flex items-center gap-3 text-sm font-semibold text-ink">
               <input name="is_active" type="checkbox" defaultChecked />
               Active
@@ -129,15 +139,38 @@ export default async function AdminHeroPage() {
                   </div>
                 )}
                 {slide.id !== "fallback" && (
-                  <form action={removeHeroSlide} className="mt-3">
-                    <input name="id" type="hidden" value={slide.id} />
-                    <button
-                      className="w-full rounded-md border border-terracotta/30 px-3 py-2 text-sm font-bold text-terracotta transition hover:bg-terracotta hover:text-white"
-                      type="submit"
+                  <div className="mt-3 grid gap-3">
+                    <form
+                      action={updateHeroSlideOrder}
+                      className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end"
                     >
-                      Remove from rotation
-                    </button>
-                  </form>
+                      <input name="id" type="hidden" value={slide.id} />
+                      <label className="text-sm font-semibold text-ink">
+                        Rotation order
+                        <input
+                          className="mt-2 w-full rounded-md border border-ink/10 px-3 py-2"
+                          name="sort_order"
+                          type="number"
+                          defaultValue={slide.sortOrder}
+                        />
+                      </label>
+                      <button
+                        className="rounded-md bg-green px-4 py-2 text-sm font-bold text-white transition hover:bg-green/90"
+                        type="submit"
+                      >
+                        Save Order
+                      </button>
+                    </form>
+                    <form action={removeHeroSlide}>
+                      <input name="id" type="hidden" value={slide.id} />
+                      <button
+                        className="w-full rounded-md border border-terracotta/30 px-3 py-2 text-sm font-bold text-terracotta transition hover:bg-terracotta hover:text-white"
+                        type="submit"
+                      >
+                        Remove from rotation
+                      </button>
+                    </form>
+                  </div>
                 )}
               </div>
             ))}

@@ -6,6 +6,7 @@ export type HeroSlide = {
   id: string;
   imageUrl: string | null;
   videoUrl: string | null;
+  sortOrder: number;
 };
 
 export type HeroContent = {
@@ -123,6 +124,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
         id: "fallback",
         imageUrl: homeContent.hero.imageUrl,
         videoUrl: null,
+        sortOrder: 0,
       },
     ];
   }
@@ -140,6 +142,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
         id: "fallback",
         imageUrl: homeContent.hero.imageUrl,
         videoUrl: null,
+        sortOrder: 0,
       },
     ];
   }
@@ -148,6 +151,7 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
     id: slide.id,
     imageUrl: slide.image_url,
     videoUrl: slide.video_url,
+    sortOrder: slide.sort_order,
   }));
 }
 

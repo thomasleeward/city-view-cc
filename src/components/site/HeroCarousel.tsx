@@ -59,7 +59,7 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
       ))}
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/20" />
       <div className="relative mx-auto flex min-h-[680px] max-w-6xl flex-col justify-end px-5 pb-20 pt-32">
-        <p className="mb-4 text-sm font-bold uppercase tracking-[0.2em] text-gold">
+        <p className="mb-4 w-fit rounded-full bg-gold px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm">
           {content.eyebrow}
         </p>
         <h1 className="max-w-4xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">
