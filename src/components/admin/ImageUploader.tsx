@@ -10,6 +10,9 @@ type ImageUploaderProps = {
   name: string;
   label: string;
   defaultValue?: string | null;
+  recommendedSize?: string;
+  minWidth?: number;
+  minHeight?: number;
 };
 
 export function ImageUploader({
@@ -17,9 +20,25 @@ export function ImageUploader({
   name,
   label,
   defaultValue,
+  recommendedSize,
+  minWidth,
+  minHeight,
 }: ImageUploaderProps) {
   const [url, setUrl] = useState(defaultValue ?? "");
   const [status, setStatus] = useState("");
+
+  async function readImageSize(file: File) {
+    const objectUrl = URL.createObjectURL(file);
+
+    try {
+      const image = document.createElement("img");
+      image.src = objectUrl;
+      await image.decode();
+      return { width: image.naturalWidth, height: image.naturalHeight };
+    } finally {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
 
   async function upload(file: File) {
     if (!isSupabaseConfigured()) {
@@ -28,6 +47,12 @@ export function ImageUploader({
     }
 
     setStatus("Uploading...");
+    const size = await readImageSize(file);
+    const sizeWarning =
+      minWidth && minHeight && (size.width < minWidth || size.height < minHeight)
+        ? ` Uploaded, but this image is ${size.width}x${size.height}. Use at least ${minWidth}x${minHeight} for sharp hero backgrounds.`
+        : "";
+
     const supabase = createClient();
     const extension = file.name.split(".").pop() ?? "jpg";
     const path = `${crypto.randomUUID()}.${extension}`;
@@ -42,7 +67,7 @@ export function ImageUploader({
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(path);
     setUrl(data.publicUrl);
-    setStatus("Uploaded");
+    setStatus(`Uploaded.${sizeWarning}`);
   }
 
   return (
@@ -72,6 +97,9 @@ export function ImageUploader({
           value={url}
           onChange={(event) => setUrl(event.target.value)}
         />
+        {recommendedSize && (
+          <p className="mt-2 text-xs text-muted">{recommendedSize}</p>
+        )}
         {status && <p className="mt-2 text-xs text-muted">{status}</p>}
       </div>
     </div>

@@ -43,6 +43,7 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
           alt=""
           fill
           priority
+          quality={95}
           sizes="100vw"
           className="object-cover"
         />

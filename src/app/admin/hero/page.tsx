@@ -80,7 +80,14 @@ export default async function AdminHeroPage() {
                 Add active images for the homepage hero background carousel.
               </p>
             </div>
-            <ImageUploader bucket="hero-images" name="image_url" label="Hero image" />
+            <ImageUploader
+              bucket="hero-images"
+              name="image_url"
+              label="Hero image"
+              minWidth={2400}
+              minHeight={1400}
+              recommendedSize="For sharp full-width hero backgrounds, upload landscape images at least 2400x1400."
+            />
             <label className="text-sm font-semibold text-ink">
               Optional video background URL
               <input
