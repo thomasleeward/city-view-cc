@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# City View Community Church
 
-## Getting Started
+Modern rebuild of https://cityviewcc.com using Next.js App Router, TypeScript, Tailwind CSS, Supabase, GitHub, and Vercel.
 
-First, run the development server:
+## Project Structure
+
+- `src/app/(site)` public website routes
+- `src/app/admin` Supabase-auth protected admin routes
+- `src/components/site` public reusable sections and cards
+- `src/components/admin` admin shell, nav, and upload controls
+- `src/components/ui` shared primitives
+- `src/lib/content` migrated fallback content and placeholder copy
+- `src/lib/supabase` Supabase clients, auth helpers, query helpers, and types
+- `supabase/schema.sql` initial database, RLS, and storage policies
+- `docs/content-migration-audit.md` current-site sitemap/content audit
+
+## Local Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The public site renders with fallback content before Supabase is configured. Admin routes require Supabase env vars and an admin user.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+Create `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+NEXT_PUBLIC_EVENTS_URL=
+NEXT_PUBLIC_GIVING_URL=https://app.securegive.com/cityviewcc
+NEXT_PUBLIC_PRAYER_FORM_URL=
+NEXT_PUBLIC_CONTACT_FORM_URL=
+NEXT_PUBLIC_CONNECT_FORM_URL=
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Planning Center TODOs are intentionally isolated behind these URL placeholders until API access is available.
 
-## Deploy on Vercel
+## Supabase Setup
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the SQL editor.
+3. Confirm storage buckets exist:
+   - `sermon-images`
+   - `hero-images`
+4. Create the first admin user in Supabase Auth.
+5. Confirm the `profiles` row for that user has `role = 'admin'`.
+6. Add env vars to `.env.local`.
+7. Visit `/admin/login`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Current admin features:
+
+- Add sermon series with name, date label, dates, image URL/upload, and YouTube playlist URL.
+- List sermon series newest first.
+- Add homepage hero slides with headline, subheadline, image URL/upload, CTA fields, active state, and future video URL support.
+
+## Vercel Deployment
+
+1. Push this repo to GitHub.
+2. Import the repo into Vercel.
+3. Add the same environment variables in Vercel Project Settings.
+4. Deploy.
+5. Point DNS to Vercel when ready to launch.
+
+## Content Migration Checklist
+
+- Copy final homepage hero imagery into Supabase Storage.
+- Import all sermon archive series from `/watch`.
+- Upload sermon series images to `sermon-images`.
+- Copy the full About Us Statement of Faith.
+- Confirm team names, titles, emails, and photos.
+- Replace contact and prayer placeholders with Planning Center form URLs.
+- Replace Events placeholder with Church Center / Planning Center URL.
+- Confirm whether Giving remains SecureGive or moves to another provider.
+- Add Planning Center API integration later once credentials and API scope are known.
