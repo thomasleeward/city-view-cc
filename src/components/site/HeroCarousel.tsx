@@ -3,14 +3,15 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
-import type { HeroSlide } from "@/lib/supabase/queries";
+import type { HeroContent, HeroSlide } from "@/lib/supabase/queries";
 import { cn } from "@/lib/utils";
 
 type HeroCarouselProps = {
+  content: HeroContent;
   slides: HeroSlide[];
 };
 
-export function HeroCarousel({ slides }: HeroCarouselProps) {
+export function HeroCarousel({ content, slides }: HeroCarouselProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeSlide = slides[activeIndex] ?? slides[0];
 
@@ -51,19 +52,19 @@ export function HeroCarousel({ slides }: HeroCarouselProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/20" />
       <div className="relative mx-auto flex min-h-[680px] max-w-6xl flex-col justify-end px-5 pb-20 pt-32">
         <p className="mb-4 text-sm font-bold uppercase tracking-[0.2em] text-gold">
-          City View Community Church
+          {content.eyebrow}
         </p>
         <h1 className="max-w-4xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">
-          {activeSlide.headline}
+          {content.headline}
         </h1>
-        {activeSlide.subheadline && (
+        {content.subheadline && (
           <p className="mt-6 max-w-2xl text-xl leading-8 text-white/85">
-            {activeSlide.subheadline}
+            {content.subheadline}
           </p>
         )}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button href={activeSlide.ctaHref ?? "/get-connected"} variant="light">
-            {activeSlide.ctaLabel ?? "Plan Your Visit"}
+          <Button href={content.ctaHref} variant="light">
+            {content.ctaLabel}
           </Button>
           <Button href="/sermon-archive" variant="secondary">
             Watch Sermons

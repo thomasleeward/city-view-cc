@@ -5,10 +5,15 @@ import { Section } from "@/components/site/Section";
 import { SermonSeriesCard } from "@/components/site/SermonSeriesCard";
 import { siteConfig } from "@/lib/config";
 import { homeContent, ministryCards } from "@/lib/content/site";
-import { getHeroSlides, getSermonSeries } from "@/lib/supabase/queries";
+import {
+  getHeroContent,
+  getHeroSlides,
+  getSermonSeries,
+} from "@/lib/supabase/queries";
 
 export default async function Home() {
-  const [slides, sermonSeries] = await Promise.all([
+  const [heroContent, slides, sermonSeries] = await Promise.all([
+    getHeroContent(),
     getHeroSlides(),
     getSermonSeries(),
   ]);
@@ -16,7 +21,7 @@ export default async function Home() {
 
   return (
     <>
-      <HomeHero slides={slides} />
+      <HomeHero content={heroContent} slides={slides} />
 
       <Section className="bg-white" title="We saved you a seat." eyebrow="Welcome">
         <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">

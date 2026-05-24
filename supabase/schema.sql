@@ -30,6 +30,8 @@ create table public.sermon_series (
 
 create table public.hero_slides (
   id uuid primary key default gen_random_uuid(),
+  -- Text/CTA for the homepage hero lives in site_settings.homepage_hero.
+  -- These legacy text columns are kept for future slide-specific variants.
   headline text not null,
   subheadline text,
   image_url text,
@@ -48,6 +50,19 @@ create table public.site_settings (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+insert into public.site_settings (key, value)
+values (
+  'homepage_hero',
+  jsonb_build_object(
+    'eyebrow', 'City View Community Church',
+    'headline', 'Sundays at 8:30am & 10:00am',
+    'subheadline', 'We want Sunday to influence your Monday.',
+    'ctaLabel', 'Plan Your Visit',
+    'ctaHref', '/get-connected'
+  )
+)
+on conflict (key) do nothing;
 
 create or replace function public.set_updated_at()
 returns trigger

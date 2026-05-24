@@ -4,12 +4,24 @@ import { createClient } from "@/lib/supabase/server";
 
 export type HeroSlide = {
   id: string;
-  headline: string;
-  subheadline: string | null;
   imageUrl: string | null;
   videoUrl: string | null;
-  ctaLabel: string | null;
-  ctaHref: string | null;
+};
+
+export type HeroContent = {
+  eyebrow: string;
+  headline: string;
+  subheadline: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+const fallbackHeroContent: HeroContent = {
+  eyebrow: "City View Community Church",
+  headline: homeContent.hero.headline,
+  subheadline: homeContent.hero.subheadline,
+  ctaLabel: "Plan Your Visit",
+  ctaHref: "/get-connected",
 };
 
 export async function getSermonSeries(): Promise<SermonSeries[]> {
@@ -49,12 +61,8 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
     return [
       {
         id: "fallback",
-        headline: homeContent.hero.headline,
-        subheadline: homeContent.hero.subheadline,
         imageUrl: homeContent.hero.imageUrl,
         videoUrl: null,
-        ctaLabel: "Plan Your Visit",
-        ctaHref: "/get-connected",
       },
     ];
   }
@@ -70,23 +78,58 @@ export async function getHeroSlides(): Promise<HeroSlide[]> {
     return [
       {
         id: "fallback",
-        headline: homeContent.hero.headline,
-        subheadline: homeContent.hero.subheadline,
         imageUrl: homeContent.hero.imageUrl,
         videoUrl: null,
-        ctaLabel: "Plan Your Visit",
-        ctaHref: "/get-connected",
       },
     ];
   }
 
   return data.map((slide) => ({
     id: slide.id,
-    headline: slide.headline,
-    subheadline: slide.subheadline,
     imageUrl: slide.image_url,
     videoUrl: slide.video_url,
-    ctaLabel: slide.cta_label,
-    ctaHref: slide.cta_href,
   }));
+}
+
+export async function getHeroContent(): Promise<HeroContent> {
+  const supabase = await createClient();
+
+  if (!supabase) {
+    return fallbackHeroContent;
+  }
+
+  const { data, error } = await supabase
+    .from("site_settings")
+    .select("value")
+    .eq("key", "homepage_hero")
+    .maybeSingle();
+
+  if (error || !data?.value) {
+    return fallbackHeroContent;
+  }
+
+  const value = data.value;
+
+  return {
+    eyebrow:
+      typeof value.eyebrow === "string" && value.eyebrow
+        ? value.eyebrow
+        : fallbackHeroContent.eyebrow,
+    headline:
+      typeof value.headline === "string" && value.headline
+        ? value.headline
+        : fallbackHeroContent.headline,
+    subheadline:
+      typeof value.subheadline === "string" && value.subheadline
+        ? value.subheadline
+        : fallbackHeroContent.subheadline,
+    ctaLabel:
+      typeof value.ctaLabel === "string" && value.ctaLabel
+        ? value.ctaLabel
+        : fallbackHeroContent.ctaLabel,
+    ctaHref:
+      typeof value.ctaHref === "string" && value.ctaHref
+        ? value.ctaHref
+        : fallbackHeroContent.ctaHref,
+  };
 }

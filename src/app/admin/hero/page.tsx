@@ -1,56 +1,121 @@
+import Image from "next/image";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/Button";
-import { createHeroSlide } from "@/app/admin/hero/actions";
+import { createHeroSlide, updateHeroContent } from "@/app/admin/hero/actions";
 import { requireAdmin } from "@/lib/supabase/auth";
-import { getHeroSlides } from "@/lib/supabase/queries";
+import { getHeroContent, getHeroSlides } from "@/lib/supabase/queries";
 
 export default async function AdminHeroPage() {
   await requireAdmin();
-  const slides = await getHeroSlides();
+  const [content, slides] = await Promise.all([getHeroContent(), getHeroSlides()]);
 
   return (
     <AdminLayout title="Homepage Hero">
       <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
-        <form action={createHeroSlide} className="grid gap-5 rounded-lg bg-white p-6 shadow-sm">
-          <label className="text-sm font-semibold text-ink">
-            Hero headline
-            <input className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3" name="headline" required />
-          </label>
-          <label className="text-sm font-semibold text-ink">
-            Subheadline
-            <textarea className="mt-2 min-h-28 w-full rounded-md border border-ink/10 px-3 py-3" name="subheadline" />
-          </label>
-          <ImageUploader bucket="hero-images" name="image_url" label="Hero image" />
-          <label className="text-sm font-semibold text-ink">
-            Video background URL
-            <input className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3" name="video_url" type="url" />
-          </label>
-          <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid gap-8">
+          <form
+            action={updateHeroContent}
+            className="grid gap-5 rounded-lg bg-white p-6 shadow-sm"
+          >
+            <div>
+              <h2 className="font-display text-3xl font-bold">Hero Text</h2>
+              <p className="mt-2 text-sm text-muted">
+                This text stays fixed while the background images rotate.
+              </p>
+            </div>
             <label className="text-sm font-semibold text-ink">
-              CTA label
-              <input className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3" name="cta_label" />
+              Eyebrow
+              <input
+                className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                name="eyebrow"
+                defaultValue={content.eyebrow}
+              />
             </label>
             <label className="text-sm font-semibold text-ink">
-              CTA href
-              <input className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3" name="cta_href" />
+              Headline
+              <input
+                className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                name="headline"
+                defaultValue={content.headline}
+                required
+              />
             </label>
-          </div>
-          <label className="flex items-center gap-3 text-sm font-semibold text-ink">
-            <input name="is_active" type="checkbox" defaultChecked />
-            Active
-          </label>
-          <Button type="submit">Create Hero Slide</Button>
-        </form>
+            <label className="text-sm font-semibold text-ink">
+              Subheadline
+              <textarea
+                className="mt-2 min-h-28 w-full rounded-md border border-ink/10 px-3 py-3"
+                name="subheadline"
+                defaultValue={content.subheadline}
+              />
+            </label>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="text-sm font-semibold text-ink">
+                CTA label
+                <input
+                  className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                  name="cta_label"
+                  defaultValue={content.ctaLabel}
+                />
+              </label>
+              <label className="text-sm font-semibold text-ink">
+                CTA href
+                <input
+                  className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                  name="cta_href"
+                  defaultValue={content.ctaHref}
+                />
+              </label>
+            </div>
+            <Button type="submit">Save Hero Text</Button>
+          </form>
+
+          <form
+            action={createHeroSlide}
+            className="grid gap-5 rounded-lg bg-white p-6 shadow-sm"
+          >
+            <div>
+              <h2 className="font-display text-3xl font-bold">Rotating Images</h2>
+              <p className="mt-2 text-sm text-muted">
+                Add active images for the homepage hero background carousel.
+              </p>
+            </div>
+            <ImageUploader bucket="hero-images" name="image_url" label="Hero image" />
+            <label className="text-sm font-semibold text-ink">
+              Optional video background URL
+              <input
+                className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
+                name="video_url"
+                type="url"
+              />
+            </label>
+            <label className="flex items-center gap-3 text-sm font-semibold text-ink">
+              <input name="is_active" type="checkbox" defaultChecked />
+              Active
+            </label>
+            <Button type="submit">Add Hero Image</Button>
+          </form>
+        </div>
 
         <div className="rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="font-display text-3xl font-bold">Active Slides</h2>
+          <h2 className="font-display text-3xl font-bold">Active Backgrounds</h2>
           <div className="mt-5 grid gap-4">
             {slides.map((slide) => (
-              <div key={slide.id} className="rounded-md border border-ink/10 p-4">
-                <p className="font-semibold">{slide.headline}</p>
-                {slide.subheadline && (
-                  <p className="mt-1 text-sm text-muted">{slide.subheadline}</p>
+              <div key={slide.id} className="rounded-md border border-ink/10 p-3">
+                {slide.imageUrl ? (
+                  <div className="relative aspect-video overflow-hidden rounded-md bg-cream">
+                    <Image
+                      src={slide.imageUrl}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 40vw, 100vw"
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="rounded-md bg-cream p-4 text-sm text-muted">
+                    Video background only
+                  </div>
                 )}
               </div>
             ))}
