@@ -17,24 +17,21 @@ export const ministryCards = [
     title: "City Kids",
     description:
       "Every Sunday we have a whole section of our building dedicated to your kids during both services, from babies through 5th grade.",
-    imageUrl:
-      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/city-kids-card.jpeg",
+    imageUrl: "/CityViewKids.png",
     href: "/get-connected",
   },
   {
     title: "Students",
     description:
       "Student Meetup gives middle and high schoolers a place to be heard, grow in faith, and have a ton of fun.",
-    imageUrl:
-      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/students-card.jpeg",
+    imageUrl: "/CityViewStudents.png",
     href: "/get-connected",
   },
   {
     title: "Connect Groups",
     description:
       "We were created for community. Find a group, serve locally, and take your next step with people who feel like family.",
-    imageUrl:
-      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/connect-groups-card.jpeg",
+    imageUrl: "/ConnectGroups.png",
     href: "/get-connected",
   },
 ];

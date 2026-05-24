@@ -19,14 +19,14 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-ink/10 bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5">
-        <Link href="/" className="relative block h-12 w-44 sm:w-56">
+      <div className="mx-auto flex h-24 max-w-6xl items-center justify-between px-5">
+        <Link href="/" className="relative block h-16 w-56 sm:w-72">
           <Image
             src="/cityviewlogo.png"
             alt="City View Community Church"
             fill
             priority
-            sizes="(min-width: 640px) 224px, 176px"
+            sizes="(min-width: 640px) 288px, 224px"
             className="object-contain object-left"
           />
         </Link>
