@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -19,13 +20,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-ink/10 bg-cream/90 backdrop-blur">
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-5">
-        <Link href="/" className="leading-tight">
-          <span className="block text-lg font-black uppercase tracking-wide text-ink">
-            City View
-          </span>
-          <span className="block text-xs font-bold uppercase tracking-[0.22em] text-green">
-            Community Church
-          </span>
+        <Link href="/" className="relative block h-12 w-44 sm:w-56">
+          <Image
+            src="/cityviewlogo.png"
+            alt="City View Community Church"
+            fill
+            priority
+            sizes="(min-width: 640px) 224px, 176px"
+            className="object-contain object-left"
+          />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">

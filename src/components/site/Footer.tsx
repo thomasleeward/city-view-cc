@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
 
@@ -6,7 +7,15 @@ export function Footer() {
     <footer className="bg-ink text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
         <div>
-          <p className="font-display text-3xl font-bold">{siteConfig.name}</p>
+          <Link href="/" className="relative block h-16 w-64 max-w-full">
+            <Image
+              src="/cityviewlogo.png"
+              alt={siteConfig.name}
+              fill
+              sizes="256px"
+              className="object-contain object-left brightness-0 invert"
+            />
+          </Link>
           <p className="mt-4 max-w-md text-white/70">
             Discover your purpose. Live on mission. We would love to meet you
             this Sunday in Santee.
