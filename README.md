@@ -52,6 +52,7 @@ Planning Center TODOs are intentionally isolated behind these URL placeholders u
 4. Confirm storage buckets exist:
    - `sermon-images`
    - `hero-images`
+   - `site-images`
 5. Create the first admin user in Supabase Auth.
 6. Confirm the `profiles` row for that user has `role = 'admin'`.
 7. Add env vars to `.env.local`.
@@ -76,6 +77,7 @@ Current admin features:
 - Copy final homepage hero imagery into Supabase Storage.
 - Import all sermon archive series from `/watch`.
 - Upload sermon series images to `sermon-images`.
+- Upload reusable site photos to `site-images`.
 - Copy the full About Us Statement of Faith.
 - Confirm team names, titles, emails, and photos.
 - Replace contact and prayer placeholders with Planning Center form URLs.

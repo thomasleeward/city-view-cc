@@ -90,10 +90,11 @@ The rebuild includes all 51 sermon cards found on the current Watch page as fall
 
 ## Image Migration Notes
 
-The current site uses LeadConnector/FileSafe image URLs. The rebuild temporarily references those remote URLs so the layout works locally. Production migration should download approved originals and upload them into Supabase Storage buckets:
+Most reused site and sermon images have been migrated from LeadConnector/FileSafe into Supabase Storage. The old homepage hero fallback image intentionally still references the original remote URL until final hero imagery is chosen.
 
 - `hero-images`
 - `sermon-images`
+- `site-images`
 
 ## TODO
 
@@ -101,4 +102,3 @@ The current site uses LeadConnector/FileSafe image URLs. The rebuild temporarily
 - Confirm final Giving provider URL if replacing SecureGive.
 - Replace contact and prayer forms with Planning Center form URLs.
 - Copy full Statement of Faith from current About Us page.
-- Import all sermon archive entries and images into Supabase.

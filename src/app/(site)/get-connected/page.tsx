@@ -35,7 +35,7 @@ export default function GetConnectedPage() {
           <article className="rounded-lg bg-white p-5 shadow-sm">
             <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
-                src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fe6e1507d47e1b4771ee3e.jpeg"
+                src="https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/city-kids.jpeg"
                 alt=""
                 fill
                 className="object-cover"
@@ -52,7 +52,7 @@ export default function GetConnectedPage() {
           <article className="rounded-lg bg-white p-5 shadow-sm">
             <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
-                src="https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fe6db3f5202af7f09f1ae4.jpeg"
+                src="https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/student-meetup.jpeg"
                 alt=""
                 fill
                 className="object-cover"

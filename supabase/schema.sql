@@ -170,7 +170,8 @@ with check (public.is_admin());
 insert into storage.buckets (id, name, public)
 values
   ('sermon-images', 'sermon-images', true),
-  ('hero-images', 'hero-images', true)
+  ('hero-images', 'hero-images', true),
+  ('site-images', 'site-images', true)
 on conflict (id) do nothing;
 
 create policy "Public can read sermon images"
@@ -192,5 +193,15 @@ create policy "Admins can upload hero images"
 on storage.objects for insert
 to authenticated
 with check (bucket_id = 'hero-images' and public.is_admin());
+
+create policy "Public can read site images"
+on storage.objects for select
+to anon, authenticated
+using (bucket_id = 'site-images');
+
+create policy "Admins can upload site images"
+on storage.objects for insert
+to authenticated
+with check (bucket_id = 'site-images' and public.is_admin());
 
 -- TODO: Add Planning Center tables/API sync jobs after credentials are available.

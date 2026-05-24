@@ -18,7 +18,7 @@ export const ministryCards = [
     description:
       "Every Sunday we have a whole section of our building dedicated to your kids during both services, from babies through 5th grade.",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62e2c6ad86dfa33e4a2a064d.jpeg",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/city-kids-card.jpeg",
     href: "/get-connected",
   },
   {
@@ -26,7 +26,7 @@ export const ministryCards = [
     description:
       "Student Meetup gives middle and high schoolers a place to be heard, grow in faith, and have a ton of fun.",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/673b5faa6cdf569a93835f69.jpeg",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/students-card.jpeg",
     href: "/get-connected",
   },
   {
@@ -34,7 +34,7 @@ export const ministryCards = [
     description:
       "We were created for community. Find a group, serve locally, and take your next step with people who feel like family.",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62e2c5972510844d29d8100f.jpeg",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/connect-groups-card.jpeg",
     href: "/get-connected",
   },
 ];
@@ -45,28 +45,28 @@ export const teamMembers = [
     role: "Lead Pastors",
     email: "danny@cityviewcc.com",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://assets.cdn.filesafe.space/TgdpRjDTCwsCEKFTusIi/media/62fcba9e5e25a47ab11dea7a.jpeg",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/danny-lauren-henderson.jpeg",
   },
   {
     name: "Lauren Henderson",
     role: "Volunteer Director",
     email: "lauren@cityview.cc",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://cdn.filesafe.space/location%2FTgdpRjDTCwsCEKFTusIi%2Fimages%2F805b4c19-bb21-489b-8f03-152bb820c5f2.png?alt=media",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/lauren-henderson.png",
   },
   {
     name: "Danny Liera",
     role: "Worship Pastor",
     email: "worship@cityviewcc.com",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://cdn.filesafe.space/location%2FTgdpRjDTCwsCEKFTusIi%2Fimages%2F55932691-4375-4bb1-8285-01a9f1c86f5b.png?alt=media",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/danny-liera.png",
   },
   {
     name: "Julie Lopez",
     role: "Children's Ministry Director",
     email: "kids@cityviewcc.com",
     imageUrl:
-      "https://images.leadconnectorhq.com/image/f_webp/q_80/r_1200/u_https://cdn.filesafe.space/location%2FTgdpRjDTCwsCEKFTusIi%2Fimages%2Ffc2046c6-5eed-4683-a1e1-80cca0590a81.png?alt=media",
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/julie-lopez.png",
   },
 ];
 
