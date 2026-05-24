@@ -2,7 +2,11 @@ import Image from "next/image";
 import { ImageUploader } from "@/components/admin/ImageUploader";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/Button";
-import { createHeroSlide, updateHeroContent } from "@/app/admin/hero/actions";
+import {
+  createHeroSlide,
+  removeHeroSlide,
+  updateHeroContent,
+} from "@/app/admin/hero/actions";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { getHeroContent, getHeroSlides } from "@/lib/supabase/queries";
 
@@ -123,6 +127,17 @@ export default async function AdminHeroPage() {
                   <div className="rounded-md bg-cream p-4 text-sm text-muted">
                     Video background only
                   </div>
+                )}
+                {slide.id !== "fallback" && (
+                  <form action={removeHeroSlide} className="mt-3">
+                    <input name="id" type="hidden" value={slide.id} />
+                    <button
+                      className="w-full rounded-md border border-terracotta/30 px-3 py-2 text-sm font-bold text-terracotta transition hover:bg-terracotta hover:text-white"
+                      type="submit"
+                    >
+                      Remove from rotation
+                    </button>
+                  </form>
                 )}
               </div>
             ))}

@@ -63,3 +63,31 @@ export async function createHeroSlide(formData: FormData) {
   revalidatePath("/admin/hero");
   redirect("/admin/hero?saved=image");
 }
+
+export async function removeHeroSlide(formData: FormData) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+
+  if (!supabase) {
+    redirect("/admin/hero?error=service-role");
+  }
+
+  const id = String(formData.get("id") || "");
+
+  if (!id) {
+    redirect("/admin/hero?error=missing-slide");
+  }
+
+  const { error } = await supabase
+    .from("hero_slides")
+    .update({ is_active: false })
+    .eq("id", id);
+
+  if (error) {
+    redirect(`/admin/hero?error=${encodeURIComponent(error.message)}`);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/hero");
+  redirect("/admin/hero?saved=removed");
+}
