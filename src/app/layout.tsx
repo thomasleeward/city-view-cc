@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   },
   description:
     "City View Community Church in Santee, CA. Sundays at 8:30am and 10:00am.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "City View Community Church",
     description:
