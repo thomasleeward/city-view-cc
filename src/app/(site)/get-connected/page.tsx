@@ -35,7 +35,7 @@ export default function GetConnectedPage() {
           <article className="rounded-lg bg-white p-5 shadow-sm">
             <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
-                src="https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/city-kids.jpeg"
+                src="/CityViewKids.png"
                 alt=""
                 fill
                 className="object-cover"
@@ -52,7 +52,7 @@ export default function GetConnectedPage() {
           <article className="rounded-lg bg-white p-5 shadow-sm">
             <div className="relative aspect-video overflow-hidden rounded-md">
               <Image
-                src="https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/student-meetup.jpeg"
+                src="/CityViewStudents.png"
                 alt=""
                 fill
                 className="object-cover"
