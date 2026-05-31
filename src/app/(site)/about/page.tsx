@@ -2,7 +2,13 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/site/PageHero";
 import { Section } from "@/components/site/Section";
-import { beliefSummaries, teamMembers } from "@/lib/content/site";
+import { StatementOfFaith } from "@/components/site/StatementOfFaith";
+import {
+  beliefIntro,
+  beliefStatements,
+  leadPastors,
+  teamMembers,
+} from "@/lib/content/site";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -44,7 +50,36 @@ export default function AboutPage() {
         </div>
       </Section>
       <Section className="bg-white" title="Meet Our Team" eyebrow="People">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <article className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-full">
+            <Image
+              src={leadPastors.imageUrl}
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 40vw, 90vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="text-center lg:text-left">
+            <h2 className="font-display text-4xl font-bold">
+              {leadPastors.name}
+            </h2>
+            <p className="mt-2 text-2xl text-ink">{leadPastors.role}</p>
+            <a
+              className="mt-2 block font-semibold text-terracotta"
+              href={`mailto:${leadPastors.email}`}
+            >
+              {leadPastors.email}
+            </a>
+            <div className="mx-auto my-6 h-px w-64 max-w-full bg-ink/20 lg:mx-0" />
+            <div className="space-y-5 text-lg leading-8 text-muted">
+              {leadPastors.bio.map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </article>
+        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {teamMembers.map((person) => (
             <article key={person.name} className="rounded-lg bg-cream p-4">
               <div className="relative aspect-square overflow-hidden rounded-md">
@@ -57,7 +92,9 @@ export default function AboutPage() {
                 />
               </div>
               <h3 className="mt-4 font-display text-2xl font-bold">{person.name}</h3>
-              <p className="font-semibold text-terracotta">{person.role}</p>
+              {person.role ? (
+                <p className="font-semibold text-terracotta">{person.role}</p>
+              ) : null}
               <a className="mt-2 block text-sm text-muted" href={`mailto:${person.email}`}>
                 {person.email}
               </a>
@@ -66,17 +103,7 @@ export default function AboutPage() {
         </div>
       </Section>
       <Section title="Statement of Faith" eyebrow="Beliefs">
-        <div className="grid gap-4 md:grid-cols-2">
-          {beliefSummaries.map((belief) => (
-            <div key={belief} className="rounded-lg border border-ink/10 bg-white p-5">
-              <p className="leading-7 text-muted">{belief}</p>
-            </div>
-          ))}
-        </div>
-        <p className="mt-6 max-w-3xl text-sm leading-6 text-muted">
-          TODO: Copy the full Statement of Faith from the current About Us page
-          into a dedicated long-form section or CMS-managed content block.
-        </p>
+        <StatementOfFaith intro={beliefIntro} statements={beliefStatements} />
       </Section>
     </>
   );
