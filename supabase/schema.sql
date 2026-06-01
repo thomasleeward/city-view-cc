@@ -4,6 +4,7 @@
 create extension if not exists "pgcrypto";
 
 create type public.profile_role as enum ('admin');
+create type public.assessment_type as enum ('disc', 'spiritual_gifts');
 
 create table public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -51,6 +52,23 @@ create table public.site_settings (
   updated_at timestamptz not null default now()
 );
 
+create table public.assessment_submissions (
+  id uuid primary key default gen_random_uuid(),
+  full_name text not null,
+  email text not null,
+  assessment_type public.assessment_type not null,
+  answers jsonb not null default '{}'::jsonb,
+  scores jsonb not null default '{}'::jsonb,
+  primary_result text not null,
+  secondary_results text[] not null default '{}'::text[],
+  pco_person_id text,
+  pco_synced_at timestamptz,
+  pco_sync_status text,
+  pco_sync_error text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 insert into public.site_settings (key, value)
 values (
   'homepage_hero',
@@ -90,6 +108,10 @@ create trigger site_settings_updated_at
 before update on public.site_settings
 for each row execute function public.set_updated_at();
 
+create trigger assessment_submissions_updated_at
+before update on public.assessment_submissions
+for each row execute function public.set_updated_at();
+
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -116,6 +138,7 @@ alter table public.profiles enable row level security;
 alter table public.sermon_series enable row level security;
 alter table public.hero_slides enable row level security;
 alter table public.site_settings enable row level security;
+alter table public.assessment_submissions enable row level security;
 
 create or replace function public.is_admin()
 returns boolean
@@ -167,6 +190,12 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+create policy "Admins can manage assessment submissions"
+on public.assessment_submissions for all
+to authenticated
+using (public.is_admin())
+with check (public.is_admin());
+
 insert into storage.buckets (id, name, public)
 values
   ('sermon-images', 'sermon-images', true),
@@ -204,4 +233,5 @@ on storage.objects for insert
 to authenticated
 with check (bucket_id = 'site-images' and public.is_admin());
 
--- TODO: Add Planning Center tables/API sync jobs after credentials are available.
+-- Assessment submissions are created through a server action using the service
+-- role key so public visitors cannot read or query saved results directly.

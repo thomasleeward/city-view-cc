@@ -1,4 +1,5 @@
 export type ProfileRole = "admin";
+export type AssessmentType = "disc" | "spiritual_gifts";
 
 export type Database = {
   public: {
@@ -95,11 +96,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      assessment_submissions: {
+        Row: {
+          id: string;
+          full_name: string;
+          email: string;
+          assessment_type: AssessmentType;
+          answers: Record<string, unknown>;
+          scores: Record<string, unknown>;
+          primary_result: string;
+          secondary_results: string[];
+          pco_person_id: string | null;
+          pco_synced_at: string | null;
+          pco_sync_status: string | null;
+          pco_sync_error: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          full_name: string;
+          email: string;
+          assessment_type: AssessmentType;
+          answers?: Record<string, unknown>;
+          scores?: Record<string, unknown>;
+          primary_result: string;
+          secondary_results?: string[];
+          pco_person_id?: string | null;
+          pco_synced_at?: string | null;
+          pco_sync_status?: string | null;
+          pco_sync_error?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["assessment_submissions"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       profile_role: ProfileRole;
+      assessment_type: AssessmentType;
     };
     CompositeTypes: Record<string, never>;
   };

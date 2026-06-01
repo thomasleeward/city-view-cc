@@ -9,6 +9,16 @@ export default async function AdminPage() {
     <AdminLayout title="Dashboard">
       <div className="grid gap-5 md:grid-cols-2">
         <div className="rounded-lg bg-white p-6 shadow-sm">
+          <h2 className="font-display text-3xl font-bold">Assessments</h2>
+          <p className="mt-3 text-muted">
+            Review DISC and spiritual gifts results, connect people to Planning
+            Center, and sync custom fields.
+          </p>
+          <Button href="/admin/assessments" className="mt-6">
+            Manage Results
+          </Button>
+        </div>
+        <div className="rounded-lg bg-white p-6 shadow-sm">
           <h2 className="font-display text-3xl font-bold">Sermon Series</h2>
           <p className="mt-3 text-muted">
             Add new sermon series, images, dates, and YouTube playlist links.
