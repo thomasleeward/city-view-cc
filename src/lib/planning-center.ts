@@ -13,6 +13,12 @@ type PlanningCenterListResponse = {
   };
 };
 
+type PlanningCenterUploadResponse = {
+  data?: Array<{
+    id: string;
+  }>;
+};
+
 type PlanningCenterSingleResponse = {
   data?: PlanningCenterResource;
 };
@@ -39,29 +45,33 @@ const defaultFieldIds = {
   discSScore: "1064955",
   discCScore: "1064956",
   spiritualGifts: "1051090",
+  spiritualGiftsPdf: "1051059",
 };
 
 const spiritualGiftPcoValues: Record<string, string> = {
-  administration: "Administration",
-  discernment: "Discernment",
-  encouragement: "Exhortation",
-  evangelism: "Evangelism",
-  faith: "Faith",
-  giving: "Giving",
-  healing: "Healing",
-  hospitality: "Hospitality",
-  knowledge: "Knowledge",
-  leadership: "Leadership",
-  mercy: "Mercy",
-  prophecy: "Prophecy",
-  shepherding: "Shepherding/Pastoring",
-  serving: "Service/Helps",
-  teaching: "Teaching",
-  wisdom: "Wisdom",
-  "Encouragement / Exhortation": "Exhortation",
-  "Mercy / Compassion": "Mercy",
-  "Serving / Helps": "Service/Helps",
-  "Shepherding / Pastoring": "Shepherding/Pastoring",
+  administration:
+    "Administration: Organizing and guiding church activities and goals",
+  discernment: "Discernment: Recognizing truth from error and distinguishing spirits",
+  encouragement: "Exhortation: Encouraging and motivating others in faith",
+  evangelism: "Evangelism: Sharing the gospel and leading others to Christ",
+  faith: "Faith: Trusting God to accomplish His purposes and encouraging others",
+  healing: "Healing: Miraculous ability to restore health",
+  knowledge: "Knowledge: Understanding and teaching God's Word effectively",
+  leadership: "Leadership: Guiding and inspiring others to serve God",
+  mercy: "Mercy: Showing compassion and care for those in need",
+  prophecy: "Prophecy: Speaking God's message boldly and accurately",
+  shepherding:
+    "Shepherding/Pastoring: Caring for the spiritual well-being of others",
+  serving: "Service/Helps: Assisting others with practical needs",
+  teaching: "Teaching: Instructing others in God's Word",
+  wisdom:
+    "Wisdom: The ability to apply knowledge and discern God's will in practical ways",
+  "Encouragement / Exhortation":
+    "Exhortation: Encouraging and motivating others in faith",
+  "Mercy / Compassion": "Mercy: Showing compassion and care for those in need",
+  "Serving / Helps": "Service/Helps: Assisting others with practical needs",
+  "Shepherding / Pastoring":
+    "Shepherding/Pastoring: Caring for the spiritual well-being of others",
 };
 
 function envOrDefault(name: string, fallback: string) {
@@ -81,6 +91,21 @@ function getPlanningCenterHeaders() {
   return {
     Authorization: `Basic ${token}`,
     "Content-Type": "application/json",
+  };
+}
+
+function getPlanningCenterUploadHeaders() {
+  const appId = process.env.PLANNING_CENTER_APP_ID;
+  const secret = process.env.PLANNING_CENTER_SECRET;
+
+  if (!appId || !secret) {
+    return null;
+  }
+
+  const token = Buffer.from(`${appId}:${secret}`).toString("base64");
+
+  return {
+    Authorization: `Basic ${token}`,
   };
 }
 
@@ -139,6 +164,39 @@ async function planningCenterFetchAll(path: string): Promise<{
   return { records, included };
 }
 
+async function uploadPlanningCenterFile(file: Blob, filename: string) {
+  const headers = getPlanningCenterUploadHeaders();
+
+  if (!headers) {
+    throw new Error("Planning Center credentials are not configured.");
+  }
+
+  const formData = new FormData();
+  formData.append("file", file, filename);
+
+  const response = await fetch("https://upload.planningcenteronline.com/v2/files", {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(
+      `Planning Center file upload failed (${response.status}): ${message}`,
+    );
+  }
+
+  const result = (await response.json()) as PlanningCenterUploadResponse;
+  const fileId = result.data?.[0]?.id;
+
+  if (!fileId) {
+    throw new Error("Planning Center file upload did not return a file id.");
+  }
+
+  return fileId;
+}
+
 function attrString(
   resource: PlanningCenterResource,
   key: string,
@@ -151,6 +209,14 @@ function attrString(
 function attrNumber(resource: PlanningCenterResource, key: string) {
   const value = resource.attributes?.[key];
   return typeof value === "number" ? value : 0;
+}
+
+async function getFieldOptionValues(fieldDefinitionId: string) {
+  const { records } = await planningCenterFetchAll(
+    `/people/v2/field_definitions/${fieldDefinitionId}/field_options?per_page=100`,
+  );
+
+  return records.map((record) => attrString(record, "value")).filter(Boolean);
 }
 
 export async function findPlanningCenterPeople(query: string) {
@@ -305,9 +371,9 @@ async function createFieldDatum(
   );
 }
 
-async function deleteFieldDatum(personId: string, fieldDatumId: string) {
+async function deleteFieldDatum(fieldDatumId: string) {
   await planningCenterFetch<unknown>(
-    `/people/v2/people/${personId}/field_data/${fieldDatumId}`,
+    `/people/v2/field_data/${fieldDatumId}`,
     {
       method: "DELETE",
     },
@@ -327,7 +393,21 @@ async function syncCheckboxFieldValues(
   const existing = await planningCenterFetch<PlanningCenterListResponse>(
     `/people/v2/people/${personId}/field_data?${params.toString()}`,
   );
-  const desiredValues = new Set(values.map((value) => value.trim()).filter(Boolean));
+  const optionValues = await getFieldOptionValues(fieldDefinitionId);
+  const resolvedValues = values
+    .map((value) => resolveCheckboxOption(value, optionValues))
+    .filter((value): value is string => Boolean(value));
+  const missingOptions = values.filter(
+    (value) => !resolveCheckboxOption(value, optionValues),
+  );
+
+  if (missingOptions.length) {
+    throw new Error(
+      `Missing Planning Center checkbox option(s): ${missingOptions.join(", ")}`,
+    );
+  }
+
+  const desiredValues = new Set(resolvedValues);
   const existingValues = new Map(
     (existing.data ?? []).map((datum) => [
       attrString(datum, "value"),
@@ -338,7 +418,7 @@ async function syncCheckboxFieldValues(
   await Promise.all(
     (existing.data ?? [])
       .filter((datum) => !desiredValues.has(attrString(datum, "value")))
-      .map((datum) => deleteFieldDatum(personId, datum.id)),
+      .map((datum) => deleteFieldDatum(datum.id)),
   );
 
   await Promise.all(
@@ -348,12 +428,191 @@ async function syncCheckboxFieldValues(
   );
 }
 
+function comparableOption(value: string) {
+  return normalizePdfText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function optionPrefix(value: string) {
+  return value.split(":")[0]?.trim() ?? value;
+}
+
+function resolveCheckboxOption(value: string, optionValues: string[]) {
+  const trimmed = value.trim();
+  const comparableValue = comparableOption(trimmed);
+  const comparablePrefix = comparableOption(optionPrefix(trimmed));
+
+  return (
+    optionValues.find((option) => comparableOption(option) === comparableValue) ??
+    optionValues.find(
+      (option) => comparableOption(optionPrefix(option)) === comparablePrefix,
+    ) ??
+    null
+  );
+}
+
 function normalizeSpiritualGiftValue(value: string) {
   return spiritualGiftPcoValues[value] ?? value;
 }
 
+function normalizePdfText(value: string) {
+  return value
+    .replace(/[’‘]/g, "'")
+    .replace(/[“”]/g, '"')
+    .replace(/–|—/g, "-")
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, "");
+}
+
+function escapePdfText(value: string) {
+  return normalizePdfText(value).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+}
+
+function wrapPdfLine(line: string, maxLength = 88) {
+  const words = normalizePdfText(line).split(/\s+/);
+  const lines: string[] = [];
+  let current = "";
+
+  words.forEach((word) => {
+    const next = current ? `${current} ${word}` : word;
+    if (next.length > maxLength && current) {
+      lines.push(current);
+      current = word;
+      return;
+    }
+    current = next;
+  });
+
+  if (current) {
+    lines.push(current);
+  }
+
+  return lines.length ? lines : [""];
+}
+
+function createSimplePdf(lines: string[]) {
+  const pageLines = lines.flatMap((line) => wrapPdfLine(line));
+  const linesPerPage = 42;
+  const pages: string[][] = [];
+
+  for (let i = 0; i < pageLines.length; i += linesPerPage) {
+    pages.push(pageLines.slice(i, i + linesPerPage));
+  }
+
+  const objects: string[] = [];
+  const addObject = (content: string) => {
+    objects.push(content);
+    return objects.length;
+  };
+
+  const catalogId = addObject("<< /Type /Catalog /Pages 2 0 R >>");
+  const pagesId = addObject("");
+  const fontId = addObject("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  const pageIds: number[] = [];
+
+  pages.forEach((page) => {
+    const stream = [
+      "BT",
+      "/F1 11 Tf",
+      "72 742 Td",
+      "15 TL",
+      ...page.map((line) => `(${escapePdfText(line)}) Tj T*`),
+      "ET",
+    ].join("\n");
+    const contentId = addObject(
+      `<< /Length ${Buffer.byteLength(stream, "utf8")} >>\nstream\n${stream}\nendstream`,
+    );
+    const pageId = addObject(
+      `<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${fontId} 0 R >> >> /Contents ${contentId} 0 R >>`,
+    );
+    pageIds.push(pageId);
+  });
+
+  objects[pagesId - 1] =
+    `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${pageIds.length} >>`;
+  objects[catalogId - 1] = "<< /Type /Catalog /Pages 2 0 R >>";
+
+  let pdf = "%PDF-1.4\n";
+  const offsets = [0];
+
+  objects.forEach((object, index) => {
+    offsets.push(Buffer.byteLength(pdf, "utf8"));
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+
+  const xrefOffset = Buffer.byteLength(pdf, "utf8");
+  pdf += `xref\n0 ${objects.length + 1}\n`;
+  pdf += "0000000000 65535 f \n";
+  offsets.slice(1).forEach((offset) => {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  });
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+
+  return new Blob([Buffer.from(pdf, "utf8")], { type: "application/pdf" });
+}
+
+function buildSpiritualGiftsPdf({
+  name,
+  email,
+  primaryResult,
+  scores,
+}: {
+  name: string;
+  email: string;
+  primaryResult: string;
+  scores: Record<string, number>;
+}) {
+  const scoreLines = Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .map(([gift, score]) => `${gift}: ${score}`);
+
+  return createSimplePdf([
+    "City View Community Church",
+    "Spiritual Gifts Assessment Results",
+    "",
+    `Name: ${name}`,
+    `Email: ${email}`,
+    `Generated: ${new Date().toLocaleString("en-US", { timeZone: "America/New_York" })}`,
+    "",
+    `Top Gifts: ${primaryResult}`,
+    "",
+    "All Spiritual Gift Scores",
+    ...scoreLines,
+  ]);
+}
+
+async function syncSpiritualGiftsPdf({
+  personId,
+  name,
+  email,
+  primaryResult,
+  scores,
+}: {
+  personId: string;
+  name: string;
+  email: string;
+  primaryResult: string;
+  scores: Record<string, number>;
+}) {
+  const fieldId = envOrDefault(
+    "PLANNING_CENTER_SPIRITUAL_GIFTS_PDF_FIELD_ID",
+    defaultFieldIds.spiritualGiftsPdf,
+  );
+  const safeName = normalizePdfText(name).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "participant";
+  const pdf = buildSpiritualGiftsPdf({ name, email, primaryResult, scores });
+  const fileId = await uploadPlanningCenterFile(
+    pdf,
+    `${safeName}-spiritual-gifts-results.pdf`,
+  );
+
+  await upsertFieldDatum(personId, fieldId, fileId);
+}
+
 export async function syncAssessmentToPlanningCenter({
   personId,
+  name,
+  email,
   assessmentType,
   primaryResult,
   summary,
@@ -361,6 +620,8 @@ export async function syncAssessmentToPlanningCenter({
   selectedResults,
 }: {
   personId: string;
+  name: string;
+  email: string;
   assessmentType: "disc" | "spiritual_gifts";
   primaryResult: string;
   summary: string;
@@ -413,6 +674,13 @@ export async function syncAssessmentToPlanningCenter({
     const values = selectedResults.map(normalizeSpiritualGiftValue);
 
     await syncCheckboxFieldValues(personId, spiritualGiftsField, values);
+    await syncSpiritualGiftsPdf({
+      personId,
+      name,
+      email,
+      primaryResult,
+      scores,
+    });
   }
 
   if (summaryField) {

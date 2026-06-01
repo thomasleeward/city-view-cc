@@ -78,6 +78,8 @@ export async function syncSubmissionToPlanningCenter(formData: FormData) {
 
     await syncAssessmentToPlanningCenter({
       personId,
+      name: data.full_name,
+      email: data.email,
       assessmentType: data.assessment_type,
       primaryResult: data.primary_result,
       summary,

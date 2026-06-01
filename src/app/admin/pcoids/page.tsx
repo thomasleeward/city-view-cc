@@ -29,6 +29,10 @@ const expectedFields = [
     description: "Top spiritual gifts checkbox field. Default: 1051090",
   },
   {
+    env: "PLANNING_CENTER_SPIRITUAL_GIFTS_PDF_FIELD_ID",
+    description: "Spiritual gifts result PDF upload field. Default: 1051059",
+  },
+  {
     env: "PLANNING_CENTER_ASSESSMENT_SUMMARY_FIELD_ID",
     description: "Optional combined score summary",
   },
