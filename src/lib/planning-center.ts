@@ -17,6 +17,13 @@ type PlanningCenterSingleResponse = {
   data?: PlanningCenterResource;
 };
 
+type DiscScores = {
+  D?: number;
+  I?: number;
+  S?: number;
+  C?: number;
+};
+
 export type PlanningCenterPersonMatch = {
   id: string;
   name: string;
@@ -24,6 +31,42 @@ export type PlanningCenterPersonMatch = {
 };
 
 const baseUrl = "https://api.planningcenteronline.com";
+
+const defaultFieldIds = {
+  discResult: "1064952",
+  discDScore: "1064953",
+  discIScore: "1064954",
+  discSScore: "1064955",
+  discCScore: "1064956",
+  spiritualGifts: "1051090",
+};
+
+const spiritualGiftPcoValues: Record<string, string> = {
+  administration: "Administration",
+  discernment: "Discernment",
+  encouragement: "Exhortation",
+  evangelism: "Evangelism",
+  faith: "Faith",
+  giving: "Giving",
+  healing: "Healing",
+  hospitality: "Hospitality",
+  knowledge: "Knowledge",
+  leadership: "Leadership",
+  mercy: "Mercy",
+  prophecy: "Prophecy",
+  shepherding: "Shepherding/Pastoring",
+  serving: "Service/Helps",
+  teaching: "Teaching",
+  wisdom: "Wisdom",
+  "Encouragement / Exhortation": "Exhortation",
+  "Mercy / Compassion": "Mercy",
+  "Serving / Helps": "Service/Helps",
+  "Shepherding / Pastoring": "Shepherding/Pastoring",
+};
+
+function envOrDefault(name: string, fallback: string) {
+  return process.env[name] || fallback;
+}
 
 function getPlanningCenterHeaders() {
   const appId = process.env.PLANNING_CENTER_APP_ID;
@@ -66,6 +109,10 @@ async function planningCenterFetch<T>(
     throw new Error(
       `Planning Center request failed (${response.status}): ${message}`,
     );
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
   }
 
   return (await response.json()) as T;
@@ -237,30 +284,136 @@ async function upsertFieldDatum(
   );
 }
 
+async function createFieldDatum(
+  personId: string,
+  fieldDefinitionId: string,
+  value: string,
+) {
+  await planningCenterFetch<PlanningCenterSingleResponse>(
+    `/people/v2/people/${personId}/field_data`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        data: {
+          attributes: {
+            field_definition_id: fieldDefinitionId,
+            value,
+          },
+        },
+      }),
+    },
+  );
+}
+
+async function deleteFieldDatum(personId: string, fieldDatumId: string) {
+  await planningCenterFetch<unknown>(
+    `/people/v2/people/${personId}/field_data/${fieldDatumId}`,
+    {
+      method: "DELETE",
+    },
+  );
+}
+
+async function syncCheckboxFieldValues(
+  personId: string,
+  fieldDefinitionId: string,
+  values: string[],
+) {
+  const params = new URLSearchParams({
+    "where[field_definition_id]": fieldDefinitionId,
+    per_page: "100",
+  });
+
+  const existing = await planningCenterFetch<PlanningCenterListResponse>(
+    `/people/v2/people/${personId}/field_data?${params.toString()}`,
+  );
+  const desiredValues = new Set(values.map((value) => value.trim()).filter(Boolean));
+  const existingValues = new Map(
+    (existing.data ?? []).map((datum) => [
+      attrString(datum, "value"),
+      datum.id,
+    ]),
+  );
+
+  await Promise.all(
+    (existing.data ?? [])
+      .filter((datum) => !desiredValues.has(attrString(datum, "value")))
+      .map((datum) => deleteFieldDatum(personId, datum.id)),
+  );
+
+  await Promise.all(
+    [...desiredValues]
+      .filter((value) => !existingValues.has(value))
+      .map((value) => createFieldDatum(personId, fieldDefinitionId, value)),
+  );
+}
+
+function normalizeSpiritualGiftValue(value: string) {
+  return spiritualGiftPcoValues[value] ?? value;
+}
+
 export async function syncAssessmentToPlanningCenter({
   personId,
   assessmentType,
   primaryResult,
   summary,
+  scores,
+  selectedResults,
 }: {
   personId: string;
   assessmentType: "disc" | "spiritual_gifts";
   primaryResult: string;
   summary: string;
+  scores: Record<string, number>;
+  selectedResults: string[];
 }) {
-  const resultField =
-    assessmentType === "disc"
-      ? process.env.PLANNING_CENTER_DISC_FIELD_ID
-      : process.env.PLANNING_CENTER_SPIRITUAL_GIFTS_FIELD_ID;
   const summaryField = process.env.PLANNING_CENTER_ASSESSMENT_SUMMARY_FIELD_ID;
 
-  if (!resultField) {
-    throw new Error(
-      `Missing Planning Center field id for ${assessmentType} results.`,
+  if (assessmentType === "disc") {
+    const discResultField = envOrDefault(
+      "PLANNING_CENTER_DISC_FIELD_ID",
+      defaultFieldIds.discResult,
     );
-  }
+    const discScoreFields = {
+      D: envOrDefault(
+        "PLANNING_CENTER_DISC_D_SCORE_FIELD_ID",
+        defaultFieldIds.discDScore,
+      ),
+      I: envOrDefault(
+        "PLANNING_CENTER_DISC_I_SCORE_FIELD_ID",
+        defaultFieldIds.discIScore,
+      ),
+      S: envOrDefault(
+        "PLANNING_CENTER_DISC_S_SCORE_FIELD_ID",
+        defaultFieldIds.discSScore,
+      ),
+      C: envOrDefault(
+        "PLANNING_CENTER_DISC_C_SCORE_FIELD_ID",
+        defaultFieldIds.discCScore,
+      ),
+    };
+    const discScores = scores as DiscScores;
 
-  await upsertFieldDatum(personId, resultField, primaryResult);
+    await upsertFieldDatum(personId, discResultField, primaryResult);
+
+    await Promise.all(
+      Object.entries(discScoreFields).map(([key, fieldId]) =>
+        upsertFieldDatum(
+          personId,
+          fieldId,
+          String(discScores[key as keyof DiscScores] ?? 0),
+        ),
+      ),
+    );
+  } else {
+    const spiritualGiftsField = envOrDefault(
+      "PLANNING_CENTER_SPIRITUAL_GIFTS_FIELD_ID",
+      defaultFieldIds.spiritualGifts,
+    );
+    const values = selectedResults.map(normalizeSpiritualGiftValue);
+
+    await syncCheckboxFieldValues(personId, spiritualGiftsField, values);
+  }
 
   if (summaryField) {
     await upsertFieldDatum(personId, summaryField, summary);

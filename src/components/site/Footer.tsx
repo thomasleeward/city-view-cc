@@ -48,9 +48,14 @@ export function Footer() {
               YouTube
             </Link>
           </div>
-          <Link className="mt-5 inline-block text-white/70" href={`mailto:${siteConfig.email}`}>
-            {siteConfig.email}
-          </Link>
+          <div className="mt-5 grid gap-2 text-white/70">
+            <Link className="hover:text-gold" href="/assessments">
+              Assessments
+            </Link>
+            <Link className="hover:text-gold" href={`mailto:${siteConfig.email}`}>
+              {siteConfig.email}
+            </Link>
+          </div>
         </div>
       </div>
       <div className="border-t border-white/10 px-5 py-5 text-center text-sm text-white/50">

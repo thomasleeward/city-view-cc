@@ -6,11 +6,27 @@ import { CopyButton } from "./CopyButton";
 const expectedFields = [
   {
     env: "PLANNING_CENTER_DISC_FIELD_ID",
-    description: "DISC primary result",
+    description: "DISC primary result. Default: 1064952",
+  },
+  {
+    env: "PLANNING_CENTER_DISC_D_SCORE_FIELD_ID",
+    description: "DISC D score. Default: 1064953",
+  },
+  {
+    env: "PLANNING_CENTER_DISC_I_SCORE_FIELD_ID",
+    description: "DISC I score. Default: 1064954",
+  },
+  {
+    env: "PLANNING_CENTER_DISC_S_SCORE_FIELD_ID",
+    description: "DISC S score. Default: 1064955",
+  },
+  {
+    env: "PLANNING_CENTER_DISC_C_SCORE_FIELD_ID",
+    description: "DISC C score. Default: 1064956",
   },
   {
     env: "PLANNING_CENTER_SPIRITUAL_GIFTS_FIELD_ID",
-    description: "Top spiritual gifts",
+    description: "Top spiritual gifts checkbox field. Default: 1051090",
   },
   {
     env: "PLANNING_CENTER_ASSESSMENT_SUMMARY_FIELD_ID",
@@ -127,4 +143,3 @@ export default async function PlanningCenterIdsPage() {
     </AdminLayout>
   );
 }
-

@@ -81,6 +81,8 @@ export async function syncSubmissionToPlanningCenter(formData: FormData) {
       assessmentType: data.assessment_type,
       primaryResult: data.primary_result,
       summary,
+      scores,
+      selectedResults: data.secondary_results ?? [],
     });
 
     const { error: updateError } = await supabase
@@ -139,4 +141,3 @@ export async function findPlanningCenterMatches(formData: FormData) {
     redirect(`/admin/assessments?error=${encodeURIComponent(message)}`);
   }
 }
-
