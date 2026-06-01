@@ -128,16 +128,19 @@ export async function findPlanningCenterMatches(formData: FormData) {
     redirect("/admin/assessments?error=missing-query");
   }
 
+  let matches: Awaited<ReturnType<typeof findPlanningCenterPeople>>;
+
   try {
-    const matches = await findPlanningCenterPeople(query);
-    const params = new URLSearchParams({
-      query,
-      matches: JSON.stringify(matches),
-    });
-    redirect(`/admin/assessments?${params.toString()}`);
+    matches = await findPlanningCenterPeople(query);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Planning Center search failed.";
     redirect(`/admin/assessments?error=${encodeURIComponent(message)}`);
   }
+
+  const params = new URLSearchParams({
+    query,
+    matches: JSON.stringify(matches),
+  });
+  redirect(`/admin/assessments?${params.toString()}`);
 }
