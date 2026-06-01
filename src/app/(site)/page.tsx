@@ -118,6 +118,40 @@ export default async function Home() {
           </Button>
         </div>
       </Section>
+
+      <Section className="bg-white">
+        <div className="bg-[#ee5f01] px-6 py-10 text-white shadow-sm sm:px-10 lg:px-12">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.18em] text-white/80">
+                RightNow Media
+              </p>
+              <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-5xl">
+                Free access for City View members.
+              </h2>
+              <p className="mt-5 max-w-4xl text-lg leading-8 text-white/90">
+                Our church believes that RightNow Media is a tool that can help
+                you live out your faith in every area of your life: at home, at
+                work, and in your community. In addition to series on books of
+                the Bible, RightNow Media has videos for everyone in your family
+                on a variety of topics like marriage, parenting, personal
+                finances, mental health, and more. There&apos;s even a library
+                just for kids with over 2,000 safe, entertaining videos.
+                RightNow Media has a free app that&apos;s available on all major
+                streaming devices so you and your family can access content
+                anywhere, anytime.
+              </p>
+            </div>
+            <Button
+              href="https://app.rightnowmedia.org/en/join/cityviewcommunitychurch"
+              variant="light"
+              className="w-full lg:w-auto"
+            >
+              Login or Sign Up
+            </Button>
+          </div>
+        </div>
+      </Section>
     </>
   );
 }
