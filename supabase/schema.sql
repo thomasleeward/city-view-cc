@@ -74,7 +74,7 @@ values (
   'homepage_hero',
   jsonb_build_object(
     'eyebrow', 'City View Community Church',
-    'headline', 'Sundays at 8:30am & 10:00am',
+    'headline', 'Sundays at 8:30AM & 10:30AM',
     'subheadline', 'We want Sunday to influence your Monday.',
     'ctaLabel', 'Plan Your Visit',
     'ctaHref', '/get-connected'

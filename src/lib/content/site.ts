@@ -2,7 +2,7 @@ import { siteConfig } from "@/lib/config";
 
 export const homeContent = {
   hero: {
-    headline: "Sundays at 8:30am & 10:00am",
+    headline: "Sundays at 8:30AM & 10:30AM",
     subheadline: "We want Sunday to influence your Monday.",
     eyebrow: siteConfig.name,
     imageUrl:

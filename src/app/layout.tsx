@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | City View Community Church",
   },
   description:
-    "City View Community Church in Santee, CA. Sundays at 8:30am and 10:00am.",
+    "City View Community Church in Santee, CA. Sundays at 8:30AM and 10:30AM.",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",

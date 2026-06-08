@@ -22,10 +22,10 @@ Sources inspected on May 24, 2026:
 
 ### Home
 
-- Main headline: "Sundays at 8:30am & 10:00am"
+- Main headline: "Sundays at 8:30AM & 10:30AM"
 - Subheadline: "We want Sunday to influence your Monday!"
 - Welcome copy about God creating each person with purpose
-- Service details: Sundays at 8:30am + 10:00am, 9320 Willowgrove Ave, Santee, CA 92071
+- Service details: Sundays at 8:30AM + 10:30AM, 9320 Willowgrove Ave, Santee, CA 92071
 - "#ForSantee" visitor/connection section
 - City Kids copy
 - Student Meetup copy

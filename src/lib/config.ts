@@ -9,7 +9,7 @@ export const siteConfig = {
     state: "CA",
     postalCode: "92071",
   },
-  serviceTimes: "Sundays at 8:30am + 10:00am",
+  serviceTimes: "Sundays at 8:30AM + 10:30AM",
   email: "hello@cityviewcc.com",
   social: {
     facebook: "https://www.facebook.com/cityviewcc/",
