@@ -16,22 +16,22 @@ export const ministryCards = [
   {
     title: "City Kids",
     description:
-      "Every Sunday we have a whole section of our building dedicated to your kids during both services, from babies through 5th grade.",
-    imageUrl: "/CityViewKids.png",
+      "Every Sunday we have a whole section of our building dedicated to your kids during both services, from babies through 4th grade.",
+    imageUrl: "/img/City Kids.png",
     href: "/get-connected",
   },
   {
-    title: "Students",
+    title: "The Middle",
     description:
-      "Student Meetup gives middle and high schoolers a place to be heard, grow in faith, and have a ton of fun.",
-    imageUrl: "/CityViewStudents.png",
+      "The Middle is a place where 5th–8th graders can belong, build friendships, grow in their faith, and discover who God created them to be. Through engaging messages, small groups, games, and unforgettable experiences, students learn how to follow Jesus in the middle of everyday life.",
+    imageUrl: "/img/The Middle.png",
     href: "/get-connected",
   },
   {
-    title: "Connect Groups",
+    title: "The Heights",
     description:
-      "We were created for community. Find a group, serve locally, and take your next step with people who feel like family.",
-    imageUrl: "/ConnectGroups.png",
+      "High school is a season of growth, decisions, and discovering more about who you are becoming. The Heights exists to help students rise above the noise, anchor their identity in Christ, and step confidently into the calling God has for their lives.",
+    imageUrl: "/img/The Heights.png",
     href: "/get-connected",
   },
 ];
@@ -43,11 +43,11 @@ export const leadPastors = {
   name: "Danny & Lauren Henderson",
   role: "Lead Pastors",
   email: "danny@cityviewcc.com",
-  imageUrl: `${siteImageBase}/danny-lauren-henderson.jpeg`,
+  imageUrl: "/img/Family Pic.jpg",
   bio: [
     "In 2017, Danny and Lauren visited San Diego for the first time. As they stood on the top of Mt Soledad, where you can see every area of San Diego, their hearts were drawn so deeply to this city that is 94% unchurched. They saw the deep need to live on mission and reach the lost.",
     "Within 2 months, they took a leap of faith and moved their family from the East Coast to this beautiful city that has become their forever home. They have a heart for missions and through City View have built two wells in Africa, supported Disaster Relief funds, various Missionaries and have served the community of Santee and other various global missions as well.",
-    "Danny and Lauren have been married for 16 years, and have two daughters, Brooklyn and Audrey. They are foodies, so go grab dinner with them, they will show you all the good spots. They can't wait to meet you!",
+    "Danny and Lauren have been married since 2008, and have two daughters, Brooklyn and Audrey. They are foodies, so go grab dinner with them, they will show you all the good spots. They can't wait to meet you!",
   ],
 };
 
@@ -86,6 +86,12 @@ export const teamMembers = [
     role: "Outreach Director",
     email: "hello@cityviewcc.com",
     imageUrl: `${siteImageBase}/mary-henderson.png`,
+  },
+  {
+    name: "Alexus Gordon",
+    role: "Ministry Development Director",
+    email: "alexus@cityviewcc.com",
+    imageUrl: "/img/Ministry Development.png",
   },
   {
     name: "Church Office",

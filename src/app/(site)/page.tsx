@@ -55,8 +55,8 @@ export default async function Home() {
 
       <Section
         eyebrow="#ForSantee"
-        title="Find your people. Take your next step."
-        description="Kids, students, groups, serving, prayer, and spiritual next steps are all part of getting connected at City View."
+        title="A church for the whole family."
+        description="A place where your kids can also discover purpose and learn how to live on mission."
       >
         <div className="grid gap-5 md:grid-cols-3">
           {ministryCards.map((card) => (

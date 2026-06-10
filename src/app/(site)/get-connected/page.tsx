@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/site/PageHero";
 import { Section } from "@/components/site/Section";
+import { StatementOfFaith } from "@/components/site/StatementOfFaith";
 import { siteConfig } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "Get Connected",
-  description: "Kids, students, groups, baptism, prayer, and serving at City View.",
+  description: "Discover purpose, live on mission, and take spiritual next steps at City View.",
 };
 
 const serveTeams = [
@@ -19,8 +20,52 @@ const serveTeams = [
   "Mid-week Prep",
 ];
 
+const discoverPurposeCards = [
+  {
+    title: "Connect Group",
+    imageUrl: "/img/Connect Group.png",
+    description:
+      "Every May - June, we bring all of our home groups together as one on Wednesdays from 6:30-8pm. We have themed dinner nights with childcare provided. Come grow in community and faith with us! We take a break from groups in July + August and kick off Home Groups back in September.",
+    cta: "View Group Events",
+  },
+  {
+    title: "Home Group",
+    imageUrl: "/img/Home Group.png",
+    description:
+      "Every February - March and September - October, we have groups geared towards any season you may be in. You weren't meant to do life alone, so come jump into community and let's grow together. We take a break from groups in July + August and kick off Home Groups back in September.",
+    cta: "View Group Events",
+  },
+];
+
+const gospelIntro =
+  "If you are considering making a decision to follow Christ, please know that asking Christ to be your Savior and Lord means you are entering into a relationship with God, whose very essence is love. While it does not mean that you will not have difficulties and struggles in life, it does mean that you will never walk through those difficulties alone. God promises in His Word, \"I will never leave you or forsake you.\" Hebrews 13:5. The decision to follow Jesus is the most important decision you could ever make. At City View Community Church, we want to walk alongside you and offer resources for wherever you may currently be in your spiritual journey. The story of God's choice to redeem each of us is what we call the \"Gospel.\" Here it is, in a nutshell:";
+
+const gospelStatements = [
+  {
+    title: "Our Sin",
+    preview:
+      "We are all born with a sin nature and need forgiveness to have a relationship with God.",
+    statement:
+      "We are all born with a sin nature. Because of our sin, we are unable to have a relationship with God without forgiveness. For everyone has sinned; we all fall short of God's glorious standard. Romans 3:23",
+  },
+  {
+    title: "God's Gift",
+    preview:
+      "We can't earn God's forgiveness. Jesus gave His life so that we could be forgiven.",
+    statement:
+      "We can't earn God's forgiveness - it must be given. Jesus gave His life as a sacrifice so that we could be forgiven. But God showed his great love for us by sending Christ to die for us while we were still sinners. Romans 5:8. For the wages of sin is death, but the free gift of God is eternal life through Christ Jesus our Lord. Romans 6:23",
+  },
+  {
+    title: "Our Response",
+    preview:
+      "We accept this free gift from God by committing our lives and hearts to Jesus.",
+    statement:
+      "We must accept this free gift from God by committing our lives and heart to Jesus. If you openly declare that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved. Romans 10:9",
+  },
+];
+
 export default function GetConnectedPage() {
-  const connectHref = siteConfig.external.connect || "/events";
+  const connectHref = "/events";
   const prayerHref = siteConfig.external.prayerRequest || `mailto:${siteConfig.email}`;
 
   return (
@@ -28,190 +73,78 @@ export default function GetConnectedPage() {
       <PageHero
         eyebrow="Get Connected"
         title="Life is better in community."
-        description="Take your next step through kids, students, groups, baptism, serving, or prayer."
+        description="Discover purpose, live on mission, and take your next step in faith."
       />
-      <Section title="Kids & Students" eyebrow="Families">
-        <div className="grid gap-8 lg:grid-cols-2">
-          <article className="rounded-lg bg-white p-5 shadow-sm">
-            <div className="relative aspect-video overflow-hidden rounded-md">
-              <Image
-                src="/CityViewKids.png"
-                alt=""
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h2 className="mt-5 font-display text-3xl font-bold">City Kids</h2>
-            <p className="mt-2 font-bold text-terracotta">Birth - 5th Grade</p>
-            <p className="mt-4 leading-7 text-muted">
-              Every Sunday, City Kids creates an age-specific experience where
-              kids play, learn about Jesus, and learn they were born with a
-              purpose.
-            </p>
-          </article>
-          <article className="rounded-lg bg-white p-5 shadow-sm">
-            <div className="relative aspect-video overflow-hidden rounded-md">
-              <Image
-                src="/CityViewStudents.png"
-                alt=""
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h2 className="mt-5 font-display text-3xl font-bold">Student Meetup</h2>
-            <p className="mt-2 font-bold text-terracotta">
-              Middle - High School
-            </p>
-            <p className="mt-4 leading-7 text-muted">
-              Students meet upstairs after worship to talk through doubts,
-              ideas, wins, and struggles while discovering how God is involved
-              in their lives.
-            </p>
-          </article>
-        </div>
-      </Section>
-      <Section className="bg-white" title="Connect Groups & Class" eyebrow="Connect">
+      <Section className="bg-white" title="Discover Purpose" eyebrow="Connect">
         <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-lg bg-cream p-6">
-            <h2 className="font-display text-3xl font-bold">Connect Groups</h2>
-            <p className="mt-4 leading-7 text-muted">
-              We were never meant to do life alone. Groups help you grow deeper
-              in faith, build friendships, and feel right at home.
-            </p>
-            <Button href={connectHref} className="mt-6">
-              Sign Up for a Group
-            </Button>
-          </div>
-          <div className="rounded-lg bg-cream p-6">
-            <h2 className="font-display text-3xl font-bold">Connect Class</h2>
-            <p className="mt-4 leading-7 text-muted">
-              Learn more about who we are, who God created you to be, and how
-              you can connect and live on mission.
-            </p>
-            <Button href={connectHref} className="mt-6">
-              Sign Up for Connect Class
-            </Button>
-          </div>
-        </div>
-      </Section>
-      <Section title="Spiritual Next Steps" eyebrow="Faith">
-        <div className="grid gap-6">
-          <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
-            <div className="mx-auto max-w-5xl">
-              <h2 className="text-center font-display text-4xl font-bold text-ink">
-                Following Jesus
-              </h2>
-              <div className="mt-6 space-y-5 text-lg leading-8 text-muted">
-                <p>
-                  If you are considering making a decision to follow Christ,
-                  please know that asking Christ to be your Savior and Lord means
-                  you are entering into a relationship with God, whose very
-                  essence is love. While it does not mean that you will not have
-                  difficulties and struggles in life, it does mean that you will
-                  never walk through those difficulties alone. God promises in
-                  His Word, &quot;I will never leave you or forsake you.&quot;
-                  Hebrews 13:5.
-                </p>
-                <p>
-                  The decision to follow Jesus is the most important decision you
-                  could ever make. At City View Community Church, we want to walk
-                  alongside you and offer resources for wherever you may
-                  currently be in your spiritual journey. The story of God&apos;s
-                  choice to redeem each of us is what we call the
-                  &quot;Gospel.&quot; Here it is, in a nutshell:
-                </p>
+          {discoverPurposeCards.map((card) => (
+            <article key={card.title} className="rounded-lg bg-cream p-5">
+              <div className="relative aspect-video overflow-hidden rounded-md">
+                <Image
+                  src={card.imageUrl}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                />
               </div>
-
-              <div className="mt-10 grid gap-8 text-center">
-                <div>
-                  <h3 className="font-display text-3xl font-bold text-ink">
-                    Our Sin
-                  </h3>
-                  <p className="mx-auto mt-3 max-w-2xl text-lg leading-8 text-muted">
-                    We are all born with a sin nature. Because of our sin, we
-                    are unable to have a relationship with God without
-                    forgiveness.
-                  </p>
-                  <p className="mx-auto mt-5 max-w-2xl text-lg italic leading-8 text-green">
-                    For everyone has sinned; we all fall short of God&apos;s
-                    glorious standard. Romans 3:23
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-display text-3xl font-bold text-ink">
-                    God&apos;s Gift
-                  </h3>
-                  <p className="mx-auto mt-3 max-w-2xl text-lg leading-8 text-muted">
-                    We can&apos;t earn God&apos;s forgiveness - it must be
-                    given. Jesus gave His life as a sacrifice so that we could be
-                    forgiven.
-                  </p>
-                  <p className="mx-auto mt-5 max-w-2xl text-lg italic leading-8 text-green">
-                    But God showed his great love for us by sending Christ to die
-                    for us while we were still sinners. Romans 5:8
-                  </p>
-                  <p className="mx-auto mt-4 max-w-2xl text-lg italic leading-8 text-green">
-                    For the wages of sin is death, but the free gift of God is
-                    eternal life through Christ Jesus our Lord. Romans 6:23
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-display text-3xl font-bold text-ink">
-                    Our Response
-                  </h3>
-                  <p className="mx-auto mt-3 max-w-3xl text-lg leading-8 text-muted">
-                    We must accept this free gift from God by committing our
-                    lives and heart to Jesus.
-                  </p>
-                  <p className="mx-auto mt-5 max-w-2xl text-lg italic leading-8 text-green">
-                    If you openly declare that Jesus is Lord and believe in your
-                    heart that God raised him from the dead, you will be saved.
-                    Romans 10:9
-                  </p>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="font-display text-3xl font-bold text-ink">
-                Baptism
+              <h2 className="mt-5 font-display text-3xl font-bold">
+                {card.title}
               </h2>
-              <p className="mt-4 leading-7 text-muted">
-                If you have accepted Christ as your Savior, your next step is to
-                follow Christ&apos;s example and &quot;go public&quot; with your
-                faith through baptism. As your church family, we love to
-                celebrate this special moment with you!
-              </p>
-              <button
-                className="mt-6 inline-flex min-h-11 cursor-not-allowed items-center justify-center rounded-md bg-terracotta/60 px-5 py-3 text-sm font-bold uppercase tracking-wide text-white"
-                disabled
-                type="button"
-              >
-                Registration Coming Soon
-              </button>
-            </article>
-
-            <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="font-display text-3xl font-bold text-ink">
-                Read The Bible
-              </h2>
-              <p className="mt-4 leading-7 text-muted">
-                If you are new to Christianity or you&apos;re simply looking to
-                build a solid foundation for your faith, this resource below
-                could be very helpful to you.
-              </p>
-              <Button
-                href="https://www.bible.com/reading-plans/1808-whats-next"
-                className="mt-6"
-              >
-                Bible Study
+              <p className="mt-4 leading-7 text-muted">{card.description}</p>
+              <Button href={connectHref} className="mt-6">
+                {card.cta}
               </Button>
             </article>
+          ))}
+        </div>
+      </Section>
+      <Section title="Live on Mission" eyebrow="Purpose">
+        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div className="relative aspect-video overflow-hidden rounded-lg">
+            <Image
+              src="/img/Discovery Workshop.png"
+              alt=""
+              fill
+              sizes="(min-width: 1024px) 45vw, 100vw"
+              className="object-cover"
+            />
           </div>
+          <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="font-display text-3xl font-bold text-ink">
+              Discovery Workshop
+            </h2>
+            <div className="mt-4 space-y-4 leading-7 text-muted">
+              <p>
+                Life comes in many changing seasons and in these seasons, it
+                brings many questions to the surface. In this workshop, we will
+                work through those to get to the heart of how to activate and
+                align with His purpose for your life in your current season!
+              </p>
+              <p>
+                Here are a couple questions, along with more, we will be
+                discovering together: What is God saying to our church? What is
+                God saying to you?
+              </p>
+              <p>
+                This is also an intentional time to learn more about our church,
+                how you are uniquely gifted and wired, and take your next step
+                in Living on Mission.
+              </p>
+              <p>
+                We&apos;ll provide snacks, childcare and the resources for you!
+                RSVP to let us know you are coming!
+              </p>
+              <p>
+                This class happens the last Sunday of every month, except
+                December, following the 10:30a service, upstairs in our Student
+                Center.
+              </p>
+            </div>
+            <Button href={connectHref} className="mt-6">
+              RSVP for Discovery Workshop
+            </Button>
+          </article>
         </div>
       </Section>
       <Section className="bg-green text-white">
@@ -233,6 +166,57 @@ export default function GetConnectedPage() {
         <Button href={connectHref} variant="light" className="mt-8">
           Ready to Join a Team
         </Button>
+      </Section>
+      <Section title="Spiritual Next Steps" eyebrow="Faith">
+        <div className="grid gap-6">
+          <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
+            <div className="mx-auto max-w-5xl text-left">
+              <h2 className="font-display text-4xl font-bold text-ink">
+                Following Jesus
+              </h2>
+              <div className="mt-6">
+                <StatementOfFaith
+                  intro={gospelIntro}
+                  statements={gospelStatements}
+                />
+              </div>
+            </div>
+          </article>
+
+          <div className="grid gap-6 md:grid-cols-2">
+            <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-display text-3xl font-bold text-ink">
+                Baptism
+              </h2>
+              <p className="mt-4 leading-7 text-muted">
+                If you have accepted Christ as your Savior, your next step is to
+                follow Christ&apos;s example and &quot;go public&quot; with your
+                faith through baptism. As your church family, we love to
+                celebrate this special moment with you!
+              </p>
+              <Button href={connectHref} className="mt-6">
+                View Baptism Events
+              </Button>
+            </article>
+
+            <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="font-display text-3xl font-bold text-ink">
+                Read The Bible
+              </h2>
+              <p className="mt-4 leading-7 text-muted">
+                If you are new to Christianity or you&apos;re simply looking to
+                build a solid foundation for your faith, this resource below
+                could be very helpful to you.
+              </p>
+              <Button
+                href="https://www.bible.com/reading-plans/1808-whats-next"
+                className="mt-6"
+              >
+                Bible Study
+              </Button>
+            </article>
+          </div>
+        </div>
       </Section>
       <Section title="Need someone to pray with you?" eyebrow="Prayer">
         <p className="max-w-3xl text-lg leading-8 text-muted">
