@@ -39,7 +39,7 @@ export function StatementOfFaith({
   return (
     <div className="space-y-6">
       <p className="max-w-5xl text-lg leading-8 text-muted">{intro}</p>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid items-start gap-4 md:grid-cols-2">
         {statements.map((belief) => {
           const isOpen = openTitles.has(belief.title);
           const statementId = `belief-${belief.title
