@@ -147,26 +147,6 @@ export default function GetConnectedPage() {
           </article>
         </div>
       </Section>
-      <Section className="bg-green text-white">
-        <div className="mb-10 max-w-3xl">
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
-            Serve
-          </p>
-          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
-            Join A Team
-          </h2>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {serveTeams.map((team) => (
-            <div key={team} className="rounded-lg bg-white/10 p-4 font-semibold">
-              {team}
-            </div>
-          ))}
-        </div>
-        <Button href={connectHref} variant="light" className="mt-8">
-          Ready to Join a Team
-        </Button>
-      </Section>
       <Section title="Spiritual Next Steps" eyebrow="Faith">
         <div className="grid gap-6">
           <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
@@ -231,6 +211,26 @@ export default function GetConnectedPage() {
         </p>
         <Button href={prayerHref} className="mt-6">
           Submit Prayer Request
+        </Button>
+      </Section>
+      <Section className="bg-green text-white">
+        <div className="mb-10 max-w-3xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
+            Serve
+          </p>
+          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
+            Join A Team
+          </h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {serveTeams.map((team) => (
+            <div key={team} className="rounded-lg bg-white/10 p-4 font-semibold">
+              {team}
+            </div>
+          ))}
+        </div>
+        <Button href={connectHref} variant="light" className="mt-8">
+          Ready to Join a Team
         </Button>
       </Section>
     </>
