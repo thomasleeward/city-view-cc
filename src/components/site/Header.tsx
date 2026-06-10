@@ -5,13 +5,14 @@ import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "About", href: "/about" },
   { label: "Connect", href: "/get-connected" },
   { label: "Sermons", href: "/sermon-archive" },
-  { label: "Events", href: "/events" },
+  { label: "Events", href: siteConfig.external.events },
 ];
 
 export function Header() {

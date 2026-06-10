@@ -65,7 +65,7 @@ const gospelStatements = [
 ];
 
 export default function GetConnectedPage() {
-  const connectHref = "/events";
+  const connectHref = siteConfig.external.events;
   const prayerHref = siteConfig.external.prayerRequest || `mailto:${siteConfig.email}`;
 
   return (

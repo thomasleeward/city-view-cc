@@ -20,7 +20,9 @@ export const siteConfig = {
     giving:
       process.env.NEXT_PUBLIC_GIVING_URL ??
       "https://app.securegive.com/cityviewcc",
-    events: process.env.NEXT_PUBLIC_EVENTS_URL ?? "",
+    events:
+      process.env.NEXT_PUBLIC_EVENTS_URL ??
+      "https://cityview.churchcenter.com/registrations/events",
     prayerRequest: process.env.NEXT_PUBLIC_PRAYER_FORM_URL ?? "",
     contact: process.env.NEXT_PUBLIC_CONTACT_FORM_URL ?? "",
     connect: process.env.NEXT_PUBLIC_CONNECT_FORM_URL ?? "",
