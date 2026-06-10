@@ -12,11 +12,13 @@ type BeliefStatement = {
 type StatementOfFaithProps = {
   intro: string;
   statements: BeliefStatement[];
+  children?: React.ReactNode;
 };
 
 export function StatementOfFaith({
   intro,
   statements,
+  children,
 }: StatementOfFaithProps) {
   const [openTitles, setOpenTitles] = useState<Set<string>>(new Set());
 
@@ -54,7 +56,7 @@ export function StatementOfFaith({
                 aria-expanded={isOpen}
                 aria-controls={statementId}
                 onClick={() => toggleStatement(belief.title)}
-                className="flex h-full min-h-36 w-full items-start gap-4 p-5 text-left"
+                className="flex min-h-36 w-full items-start gap-4 p-5 text-left"
               >
                 <span className="flex-1">
                   <span className="block text-sm font-bold uppercase tracking-[0.16em] text-terracotta">
@@ -78,12 +80,15 @@ export function StatementOfFaith({
                   id={statementId}
                   className="border-t border-ink/10 px-5 pb-5 pt-4"
                 >
-                  <p className="leading-7 text-muted">{belief.statement}</p>
+                  <p className="whitespace-pre-line leading-7 text-muted">
+                    {belief.statement}
+                  </p>
                 </div>
               ) : null}
             </article>
           );
         })}
+        {children}
       </div>
     </div>
   );

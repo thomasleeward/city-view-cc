@@ -46,21 +46,21 @@ const gospelStatements = [
     preview:
       "We are all born with a sin nature and need forgiveness to have a relationship with God.",
     statement:
-      "We are all born with a sin nature. Because of our sin, we are unable to have a relationship with God without forgiveness. For everyone has sinned; we all fall short of God's glorious standard. Romans 3:23",
+      "Because of our sin, we are unable to have a relationship with God without forgiveness.\n\nFor everyone has sinned; we all fall short of God's glorious standard. Romans 3:23",
   },
   {
     title: "God's Gift",
     preview:
       "We can't earn God's forgiveness. Jesus gave His life so that we could be forgiven.",
     statement:
-      "We can't earn God's forgiveness - it must be given. Jesus gave His life as a sacrifice so that we could be forgiven. But God showed his great love for us by sending Christ to die for us while we were still sinners. Romans 5:8. For the wages of sin is death, but the free gift of God is eternal life through Christ Jesus our Lord. Romans 6:23",
+      "But God showed his great love for us by sending Christ to die for us while we were still sinners. Romans 5:8\n\nFor the wages of sin is death, but the free gift of God is eternal life through Christ Jesus our Lord. Romans 6:23",
   },
   {
     title: "Our Response",
     preview:
       "We accept this free gift from God by committing our lives and hearts to Jesus.",
     statement:
-      "We must accept this free gift from God by committing our lives and heart to Jesus. If you openly declare that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved. Romans 10:9",
+      "If you openly declare that Jesus is Lord and believe in your heart that God raised him from the dead, you will be saved. Romans 10:9",
   },
 ];
 
@@ -178,7 +178,13 @@ export default function GetConnectedPage() {
                 <StatementOfFaith
                   intro={gospelIntro}
                   statements={gospelStatements}
-                />
+                >
+                  <div className="flex min-h-36 items-center rounded-lg border border-terracotta/20 bg-cream p-6 shadow-sm">
+                    <p className="font-display text-3xl font-bold leading-tight text-ink sm:text-4xl">
+                      This is the most important decision you&apos;ll ever make.
+                    </p>
+                  </div>
+                </StatementOfFaith>
               </div>
             </div>
           </article>
