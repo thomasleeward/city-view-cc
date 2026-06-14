@@ -32,7 +32,7 @@ const discoverPurposeCards = [
     title: "Home Group",
     imageUrl: "/img/Home Group.png",
     description:
-      "Every February - March and September - October, we have groups geared towards any season you may be in. You weren't meant to do life alone, so come jump into community and let's grow together. We take a break from groups in July + August and kick off Home Groups back in September.",
+      "Every February - March and September - October, we have groups geared towards any season you may be in. You weren't meant to do life alone, so come jump into community and let's grow together. We meet in homes on Wednesday nights during Home Groups season for specific age groups and topics. Childcare is provided at the church from 6-8:30p, Home Groups start at 6:30pm.",
     cta: "View Group Events",
   },
 ];
@@ -100,17 +100,17 @@ export default function GetConnectedPage() {
         </div>
       </Section>
       <Section title="Live on Mission" eyebrow="Purpose">
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-          <div className="relative aspect-video overflow-hidden rounded-lg">
+        <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-stretch">
+          <div className="relative mx-auto aspect-[961/1201] w-full max-w-md overflow-hidden rounded-lg lg:max-w-none">
             <Image
-              src="/img/Discovery Workshop.png"
+              src="/img/Discovery Workshop - vertical.jpeg"
               alt=""
               fill
-              sizes="(min-width: 1024px) 45vw, 100vw"
+              sizes="(min-width: 1024px) 35vw, 100vw"
               className="object-cover"
             />
           </div>
-          <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
+          <article className="flex flex-col justify-center rounded-lg bg-white p-6 shadow-sm sm:p-8">
             <h2 className="font-display text-3xl font-bold text-ink">
               Discovery Workshop
             </h2>
@@ -146,6 +146,26 @@ export default function GetConnectedPage() {
             </Button>
           </article>
         </div>
+      </Section>
+      <Section className="bg-green text-white">
+        <div className="mb-10 max-w-3xl">
+          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
+            Serve
+          </p>
+          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
+            Join A Team
+          </h2>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {serveTeams.map((team) => (
+            <div key={team} className="rounded-lg bg-white/10 p-4 font-semibold">
+              {team}
+            </div>
+          ))}
+        </div>
+        <Button href={connectHref} variant="light" className="mt-8">
+          Join a Serving Team
+        </Button>
       </Section>
       <Section title="Spiritual Next Steps" eyebrow="Faith">
         <div className="grid gap-6">
@@ -211,26 +231,6 @@ export default function GetConnectedPage() {
         </p>
         <Button href={prayerHref} className="mt-6">
           Submit Prayer Request
-        </Button>
-      </Section>
-      <Section className="bg-green text-white">
-        <div className="mb-10 max-w-3xl">
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
-            Serve
-          </p>
-          <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
-            Join A Team
-          </h2>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {serveTeams.map((team) => (
-            <div key={team} className="rounded-lg bg-white/10 p-4 font-semibold">
-              {team}
-            </div>
-          ))}
-        </div>
-        <Button href={connectHref} variant="light" className="mt-8">
-          Ready to Join a Team
         </Button>
       </Section>
     </>

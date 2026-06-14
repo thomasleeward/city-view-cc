@@ -15,6 +15,7 @@ export const homeContent = {
 export const ministryCards = [
   {
     title: "City Kids",
+    details: ["Birth - 4th Grade", "8:30 + 10:30am"],
     description:
       "Every Sunday we have a whole section of our building dedicated to your kids during both services, from babies through 4th grade.",
     imageUrl: "/img/City Kids.png",
@@ -22,6 +23,7 @@ export const ministryCards = [
   },
   {
     title: "The Middle",
+    details: ["5th - 8th Grade", "8:30am | Upstairs Student Center"],
     description:
       "The Middle is a place where 5th–8th graders can belong, build friendships, grow in their faith, and discover who God created them to be. Through engaging messages, small groups, games, and unforgettable experiences, students learn how to follow Jesus in the middle of everyday life.",
     imageUrl: "/img/The Middle.png",
@@ -29,6 +31,7 @@ export const ministryCards = [
   },
   {
     title: "The Heights",
+    details: ["9th - 12th Grade", "10:30am | Upstairs Student Center"],
     description:
       "High school is a season of growth, decisions, and discovering more about who you are becoming. The Heights exists to help students rise above the noise, anchor their identity in Christ, and step confidently into the calling God has for their lives.",
     imageUrl: "/img/The Heights.png",
@@ -54,14 +57,15 @@ export const leadPastors = {
 export const teamMembers = [
   {
     name: "Lauren Henderson",
-    role: "Volunteer Director",
+    role: "Communications and Connections Director",
     email: "lauren@cityview.cc",
     imageUrl: `${siteImageBase}/lauren-henderson.png`,
   },
   {
-    name: "Groups",
-    email: "hello@cityviewcc.com",
-    imageUrl: `${siteImageBase}/groups.png`,
+    name: "Alexus Gordon",
+    role: "Ministry Development Director",
+    email: "alexus@cityviewcc.com",
+    imageUrl: "/img/Ministry Development.png",
   },
   {
     name: "Danny Liera",
@@ -82,16 +86,15 @@ export const teamMembers = [
     imageUrl: `${siteImageBase}/dustin-jasmin-horning.png`,
   },
   {
+    name: "Groups",
+    email: "hello@cityviewcc.com",
+    imageUrl: `${siteImageBase}/groups.png`,
+  },
+  {
     name: "Mary Henderson",
     role: "Outreach Director",
     email: "hello@cityviewcc.com",
     imageUrl: `${siteImageBase}/mary-henderson.png`,
-  },
-  {
-    name: "Alexus Gordon",
-    role: "Ministry Development Director",
-    email: "alexus@cityviewcc.com",
-    imageUrl: "/img/Ministry Development.png",
   },
   {
     name: "Church Office",

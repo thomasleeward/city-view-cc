@@ -75,10 +75,14 @@ export default async function Home() {
               </div>
               <div className="p-5">
                 <h3 className="font-display text-2xl font-bold">{card.title}</h3>
+                {"details" in card && card.details ? (
+                  <div className="mt-3 space-y-1 font-bold text-terracotta">
+                    {card.details.map((detail) => (
+                      <p key={detail}>{detail}</p>
+                    ))}
+                  </div>
+                ) : null}
                 <p className="mt-3 text-muted">{card.description}</p>
-                <Button href={card.href} variant="ghost" className="mt-5">
-                  Learn More
-                </Button>
               </div>
             </article>
           ))}
