@@ -64,13 +64,13 @@ export default async function Home() {
               key={card.title}
               className="overflow-hidden rounded-lg bg-white shadow-sm"
             >
-              <div className="relative aspect-video">
+              <div className="relative aspect-video bg-cream">
                 <Image
                   src={card.imageUrl}
                   alt=""
                   fill
                   sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
               <div className="p-5">

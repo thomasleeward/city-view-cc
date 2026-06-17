@@ -79,13 +79,13 @@ export default function GetConnectedPage() {
         <div className="grid gap-6 md:grid-cols-2">
           {discoverPurposeCards.map((card) => (
             <article key={card.title} className="rounded-lg bg-cream p-5">
-              <div className="relative aspect-video overflow-hidden rounded-md">
+              <div className="relative aspect-video overflow-hidden rounded-md bg-cream">
                 <Image
                   src={card.imageUrl}
                   alt=""
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
+                  className="object-contain"
                 />
               </div>
               <h2 className="mt-5 font-display text-3xl font-bold">

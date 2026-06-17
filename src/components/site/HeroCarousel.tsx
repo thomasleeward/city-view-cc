@@ -62,7 +62,7 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
         <p className="mb-4 w-fit rounded-full bg-gold px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm">
           {content.eyebrow}
         </p>
-        <h1 className="max-w-4xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">
+        <h1 className="max-w-4xl font-display text-4xl font-bold leading-tight sm:text-6xl lg:text-7xl">
           {content.headline}
         </h1>
         {content.subheadline && (

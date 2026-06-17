@@ -16,7 +16,7 @@ export function PageHero({ eyebrow, title, description, className }: PageHeroPro
             {eyebrow}
           </p>
         )}
-        <h1 className="max-w-3xl font-display text-5xl font-bold sm:text-7xl">
+        <h1 className="max-w-3xl font-display text-4xl font-bold leading-tight sm:text-6xl lg:text-7xl">
           {title}
         </h1>
         {description && (

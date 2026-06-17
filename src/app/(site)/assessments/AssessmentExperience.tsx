@@ -416,7 +416,7 @@ export function AssessmentExperience() {
         <p className="text-sm font-bold uppercase tracking-[0.18em] text-terracotta">
           City View Assessments
         </p>
-        <h1 className="mt-3 font-display text-5xl font-bold text-ink">
+        <h1 className="mt-3 font-display text-4xl font-bold leading-tight text-ink sm:text-5xl">
           Discover how you are wired to connect and serve.
         </h1>
       </div>
