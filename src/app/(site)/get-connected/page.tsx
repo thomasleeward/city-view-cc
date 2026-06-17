@@ -101,13 +101,14 @@ export default function GetConnectedPage() {
       </Section>
       <Section title="Live on Mission" eyebrow="Purpose">
         <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-stretch">
-          <div className="relative mx-auto aspect-[961/1201] w-full max-w-md overflow-hidden rounded-lg lg:max-w-none">
+          <div className="mx-auto w-full max-w-md overflow-hidden rounded-lg lg:max-w-none">
             <Image
               src="/img/Discovery Workshop - vertical.jpeg"
               alt=""
-              fill
+              width={961}
+              height={1201}
               sizes="(min-width: 1024px) 35vw, 100vw"
-              className="object-cover"
+              className="h-auto w-full"
             />
           </div>
           <article className="flex flex-col justify-center rounded-lg bg-white p-6 shadow-sm sm:p-8">
