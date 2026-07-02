@@ -69,7 +69,13 @@ export default async function AdminHeroPage() {
                   className="mt-2 w-full rounded-md border border-ink/10 px-3 py-3"
                   name="cta_href"
                   defaultValue={content.ctaHref}
+                  placeholder="/get-connected or https://example.com"
+                  spellCheck={false}
                 />
+                <span className="mt-2 block text-xs font-normal leading-5 text-muted">
+                  Use an internal path like /get-connected or an external URL like
+                  https://example.com.
+                </span>
               </label>
             </div>
             <Button type="submit">Save Hero Text</Button>

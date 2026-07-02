@@ -5,6 +5,24 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function normalizeHref(value: FormDataEntryValue | null) {
+  const href = String(value || "").trim();
+
+  if (!href) {
+    return "/get-connected";
+  }
+
+  if (/^(https?:\/\/|mailto:|tel:|\/)/.test(href)) {
+    return href;
+  }
+
+  if (/^[^\s/]+\.[^\s]+/.test(href)) {
+    return `https://${href}`;
+  }
+
+  return `/${href.replace(/^\/+/, "")}`;
+}
+
 export async function updateHeroContent(formData: FormData) {
   await requireAdmin();
   const supabase = createAdminClient();
@@ -18,7 +36,7 @@ export async function updateHeroContent(formData: FormData) {
     headline: String(formData.get("headline") || ""),
     subheadline: String(formData.get("subheadline") || ""),
     ctaLabel: String(formData.get("cta_label") || "Plan Your Visit"),
-    ctaHref: String(formData.get("cta_href") || "/get-connected"),
+    ctaHref: normalizeHref(formData.get("cta_href")),
   };
 
   const { error } = await supabase.from("site_settings").upsert({

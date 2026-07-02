@@ -16,6 +16,10 @@ const variants = {
   light: "bg-white text-ink hover:bg-cream",
 };
 
+function isExternalHref(href: string) {
+  return /^(https?:)?\/\//.test(href) || href.startsWith("mailto:") || href.startsWith("tel:");
+}
+
 export function Button({
   href,
   children,
@@ -30,6 +34,14 @@ export function Button({
   );
 
   if (href) {
+    if (isExternalHref(href)) {
+      return (
+        <a className={classes} href={href}>
+          {children}
+        </a>
+      );
+    }
+
     return (
       <Link className={classes} href={href}>
         {children}
