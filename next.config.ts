@@ -1,6 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/planyourvisit",
+        destination:
+          "https://app.textinchurch.com/connect-cards/Li7s8Mmvkv9BwoLBawjM",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.leadconnectorhq.com" },
