@@ -102,6 +102,12 @@ export const teamMembers = [
     role: "Guest Experience Director",
     imageUrl: "/img/team/farah-doose.png",
   },
+  {
+    name: "Church Office",
+    email: "hello@cityviewcc.com",
+    imageUrl:
+      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/church-office.png",
+  },
 ];
 
 export const beliefIntro =
