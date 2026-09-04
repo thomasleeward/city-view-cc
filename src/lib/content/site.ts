@@ -39,14 +39,11 @@ export const ministryCards = [
   },
 ];
 
-const siteImageBase =
-  "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site";
-
 export const leadPastors = {
   name: "Danny & Lauren Henderson",
   role: "Lead Pastors",
   email: "danny@cityviewcc.com",
-  imageUrl: "/img/Family Pic Round.png",
+  imageUrl: "/img/team/danny-and-lauren.png",
   bio: [
     "In 2017, Danny and Lauren visited San Diego for the first time. As they stood on the top of Mt Soledad, where you can see every area of San Diego, their hearts were drawn so deeply to this city that is 94% unchurched. They saw the deep need to live on mission and reach the lost.",
     "Within 2 months, they took a leap of faith and moved their family from the East Coast to this beautiful city that has become their forever home. They have a heart for missions and through City View have built two wells in Africa, supported Disaster Relief funds, various Missionaries and have served the community of Santee and other various global missions as well.",
@@ -59,47 +56,51 @@ export const teamMembers = [
     name: "Lauren Henderson",
     role: "Communications and Connections Director",
     email: "lauren@cityview.cc",
-    imageUrl: `${siteImageBase}/lauren-henderson.png`,
+    imageUrl: "/img/team/lauren-henderson.png",
   },
   {
     name: "Alexus Gordon",
     role: "Ministry Development Director",
     email: "alexus@cityviewcc.com",
-    imageUrl: "/img/Ministry Development.png",
+    imageUrl: "/img/team/alexus-gordon.png",
   },
   {
     name: "Danny Liera",
     role: "Worship Pastor",
     email: "worship@cityviewcc.com",
-    imageUrl: `${siteImageBase}/danny-liera.png`,
+    imageUrl: "/img/team/danny-liera.png",
   },
   {
     name: "Julie Lopez",
     role: "Children's Ministry Director",
     email: "kids@cityviewcc.com",
-    imageUrl: `${siteImageBase}/julie-lopez.png`,
   },
   {
     name: "Dustin & Jasmin Horning",
-    role: "Student Ministry Directors",
+    role: "The Heights Directors",
     email: "students@cityviewcc.com",
-    imageUrl: `${siteImageBase}/dustin-jasmin-horning.png`,
+    imageUrl: "/img/team/dustin-and-jasmin-horning.png",
   },
   {
-    name: "Groups",
-    email: "hello@cityviewcc.com",
-    imageUrl: `${siteImageBase}/groups.png`,
+    name: "Craig & Rachel Yunker",
+    role: "The Middle Directors",
+    email: "students@cityviewcc.com",
+    imageUrl: "/img/team/craig-and-rachel-yunker.png",
   },
   {
-    name: "Mary Henderson",
-    role: "Outreach Director",
-    email: "hello@cityviewcc.com",
-    imageUrl: `${siteImageBase}/mary-henderson.png`,
+    name: "Chesnee Trujillo",
+    role: "First Impressions Director",
+    imageUrl: "/img/team/chesnee-trujillo.png",
   },
   {
-    name: "Church Office",
-    email: "hello@cityviewcc.com",
-    imageUrl: `${siteImageBase}/church-office.png`,
+    name: "Joey Maniscalco",
+    role: "Hospitality Director",
+    imageUrl: "/img/team/joey-maniscalco.png",
+  },
+  {
+    name: "Farah Doose",
+    role: "Guest Experience Director",
+    imageUrl: "/img/team/farah-doose.png",
   },
 ];
 

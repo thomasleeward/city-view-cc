@@ -83,21 +83,35 @@ export default function AboutPage() {
           {teamMembers.map((person) => (
             <article key={person.name} className="rounded-lg bg-cream p-4">
               <div className="relative aspect-square overflow-hidden rounded-md">
-                <Image
-                  src={person.imageUrl}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 25vw, 50vw"
-                  className="object-cover"
-                />
+                {person.imageUrl ? (
+                  <Image
+                    src={person.imageUrl}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 25vw, 50vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    aria-hidden="true"
+                    className="flex h-full items-center justify-center bg-ink/10 font-display text-5xl font-bold text-ink/45"
+                  >
+                    {person.name
+                      .split(" ")
+                      .map((name) => name[0])
+                      .join("")}
+                  </div>
+                )}
               </div>
               <h3 className="mt-4 font-display text-2xl font-bold">{person.name}</h3>
               {person.role ? (
                 <p className="font-semibold text-terracotta">{person.role}</p>
               ) : null}
-              <a className="mt-2 block text-sm text-muted" href={`mailto:${person.email}`}>
-                {person.email}
-              </a>
+              {person.email ? (
+                <a className="mt-2 block text-sm text-muted" href={`mailto:${person.email}`}>
+                  {person.email}
+                </a>
+              ) : null}
             </article>
           ))}
         </div>
