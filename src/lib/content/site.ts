@@ -74,6 +74,7 @@ export const teamMembers = [
     name: "Julie Lopez",
     role: "Children's Ministry Director",
     email: "kids@cityviewcc.com",
+    imageUrl: "/img/team/kids.png",
   },
   {
     name: "Dustin & Jasmin Horning",
@@ -105,8 +106,7 @@ export const teamMembers = [
   {
     name: "Church Office",
     email: "hello@cityviewcc.com",
-    imageUrl:
-      "https://rocuyegaazmzaneabnuu.supabase.co/storage/v1/object/public/site-images/site/church-office.png",
+    imageUrl: "/img/team/office.png",
   },
 ];
 
