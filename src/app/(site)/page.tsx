@@ -46,7 +46,7 @@ export default async function Home() {
               {siteConfig.address.city}, {siteConfig.address.state}{" "}
               {siteConfig.address.postalCode}
             </p>
-            <Button href="/get-connected" className="mt-6">
+            <Button href="/planyourvisit" className="mt-6">
               Plan Your Visit
             </Button>
           </div>

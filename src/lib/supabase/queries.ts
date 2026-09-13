@@ -22,7 +22,7 @@ const fallbackHeroContent: HeroContent = {
   headline: homeContent.hero.headline,
   subheadline: homeContent.hero.subheadline,
   ctaLabel: "Plan Your Visit",
-  ctaHref: "/get-connected",
+  ctaHref: "/planyourvisit",
 };
 
 export async function getSermonSeries(): Promise<SermonSeries[]> {
