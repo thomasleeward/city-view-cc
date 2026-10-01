@@ -41,6 +41,7 @@ function DiscAssessment({
   participant: Participant;
   onSaved: (type: AssessmentType, message: string) => void;
 }) {
+  const [submissionId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [error, setError] = useState("");
   const [result, setResult] = useState<{
@@ -69,6 +70,7 @@ function DiscAssessment({
 
     startTransition(async () => {
       const response = await saveAssessment({
+        id:submissionId,
         name: participant.name,
         email: participant.email,
         assessmentType: "disc",
@@ -190,6 +192,7 @@ function SpiritualGiftsAssessment({
   participant: Participant;
   onSaved: (type: AssessmentType, message: string) => void;
 }) {
+  const [submissionId] = useState(() => crypto.randomUUID());
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [error, setError] = useState("");
   const [result, setResult] = useState<{
@@ -249,6 +252,7 @@ function SpiritualGiftsAssessment({
 
     startTransition(async () => {
       const response = await saveAssessment({
+        id:submissionId,
         name: participant.name,
         email: participant.email,
         assessmentType: "spiritual_gifts",

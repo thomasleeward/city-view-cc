@@ -1,3 +1,7 @@
+import "server-only";
+import {AsyncLocalStorage} from "node:async_hooks";
+const bridgeContext=new AsyncLocalStorage<boolean>();
+export function withPlanningCenterBridge<T>(fn:()=>Promise<T>){return bridgeContext.run(true,fn);}
 type PlanningCenterResource = {
   type?: string;
   id: string;
@@ -79,6 +83,7 @@ function envOrDefault(name: string, fallback: string) {
 }
 
 function getPlanningCenterHeaders() {
+  if ((process.env.VERCEL_ENV === "preview" || process.env.PROOFADMIN_ENABLED === "true") && !bridgeContext.getStore()) return null;
   const appId = process.env.PLANNING_CENTER_APP_ID;
   const secret = process.env.PLANNING_CENTER_SECRET;
 
@@ -95,6 +100,7 @@ function getPlanningCenterHeaders() {
 }
 
 function getPlanningCenterUploadHeaders() {
+  if ((process.env.VERCEL_ENV === "preview" || process.env.PROOFADMIN_ENABLED === "true") && !bridgeContext.getStore()) return null;
   const appId = process.env.PLANNING_CENTER_APP_ID;
   const secret = process.env.PLANNING_CENTER_SECRET;
 
@@ -119,10 +125,13 @@ async function planningCenterFetch<T>(
     throw new Error("Planning Center credentials are not configured.");
   }
 
-  const url = path.startsWith("http") ? path : `${baseUrl}${path}`;
+  const url = new URL(path,baseUrl);
+  if(url.origin!==baseUrl||!url.pathname.startsWith('/people/v2/')||url.username||url.password)throw Error('Invalid Planning Center URL');
+  if(process.env.VERCEL_ENV==='preview' && init?.method && init.method!=='GET')throw Error('Planning Center writes are disabled in previews');
 
   const response = await fetch(url, {
     ...init,
+    cache:'no-store',redirect:'error',signal:AbortSignal.timeout(15000),
     headers: {
       ...headers,
       ...(init?.headers ?? {}),
@@ -130,10 +139,7 @@ async function planningCenterFetch<T>(
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(
-      `Planning Center request failed (${response.status}): ${message}`,
-    );
+    throw new Error(`Planning Center request failed (${response.status}).`);
   }
 
   if (response.status === 204) {
@@ -151,7 +157,9 @@ async function planningCenterFetchAll(path: string): Promise<{
   const included: PlanningCenterResource[] = [];
   let nextPath: string | null = path;
 
+  let pages=0;
   while (nextPath) {
+    if(++pages>50)throw Error("Planning Center pagination limit reached");
     const response: PlanningCenterListResponse =
       await planningCenterFetch<PlanningCenterListResponse>(
       nextPath,
@@ -165,6 +173,7 @@ async function planningCenterFetchAll(path: string): Promise<{
 }
 
 async function uploadPlanningCenterFile(file: Blob, filename: string) {
+  if(process.env.VERCEL_ENV==="preview")throw Error("Planning Center uploads are disabled in previews");
   const headers = getPlanningCenterUploadHeaders();
 
   if (!headers) {
@@ -178,13 +187,11 @@ async function uploadPlanningCenterFile(file: Blob, filename: string) {
     method: "POST",
     headers,
     body: formData,
+    cache:"no-store",redirect:"error",signal:AbortSignal.timeout(15000),
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    throw new Error(
-      `Planning Center file upload failed (${response.status}): ${message}`,
-    );
+    throw new Error(`Planning Center file upload failed (${response.status}).`);
   }
 
   const result = (await response.json()) as PlanningCenterUploadResponse;

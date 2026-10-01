@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 export default function AssessmentsPage() {
   return (
     <main className="min-h-screen bg-cream">
+      {process.env.VERCEL_ENV==='preview'&&<p role="status" className="mx-auto max-w-6xl px-5 py-5">Review preview: assessment results are not saved here. <a className="underline" href="https://www.cityviewcc.com/assessments">Use the live assessment</a>.</p>}
       <AssessmentExperience />
     </main>
   );

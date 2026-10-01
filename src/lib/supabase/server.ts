@@ -4,6 +4,7 @@ import { supabaseAnonKey, supabaseUrl } from "@/lib/supabase/config";
 import type { Database } from "@/lib/supabase/types";
 
 export async function createClient() {
+  if (process.env.PROOFADMIN_ENABLED === "true") return null;
   if (!supabaseUrl || !supabaseAnonKey) {
     return null;
   }

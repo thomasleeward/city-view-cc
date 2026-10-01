@@ -1,3 +1,5 @@
+import {proofAdminEnabled} from '@/lib/proofadmin/server';
+import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
 import type { Metadata } from "next";
 import { PageHero } from "@/components/site/PageHero";
@@ -15,7 +17,8 @@ export const metadata: Metadata = {
   description: "Learn the story, vision, values, team, and beliefs of City View.",
 };
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  if(proofAdminEnabled()) return <SharedPage slug="about"/>;
   return (
     <>
       <PageHero

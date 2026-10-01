@@ -1,0 +1,17 @@
+import 'server-only';
+import {cache} from 'react';
+import {connection} from 'next/server';
+import {createClient} from '@supabase/supabase-js';
+import {contentSchema} from './contract';
+import {configurationSchema} from './site-configuration';
+export const CITY_VIEW_SITE_ID='10000000-0000-4000-8000-000000000003';
+export const proofAdminEnabled=()=>process.env.PROOFADMIN_ENABLED==='true';
+export const sharedContent=cache(async()=>{
+ await connection();
+ const url=process.env.PROOFADMIN_SUPABASE_URL,key=process.env.PROOFADMIN_PUBLISHABLE_KEY;
+ if(url!=='https://lqhgemgmduxhvmfurtob.supabase.co'||!key||process.env.PROOFADMIN_SITE_ID!==CITY_VIEW_SITE_ID)throw Error('City View shared content is not configured.');
+ const client=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}});
+ const [docs,config]=await Promise.all([client.from('published_documents').select('id,content').eq('site_id',CITY_VIEW_SITE_ID),client.from('published_site_configuration').select('content').eq('site_id',CITY_VIEW_SITE_ID).single()]);
+ if(docs.error||config.error||!docs.data.length||!config.data)throw Error('Published City View content is temporarily unavailable.');
+ return {documents:docs.data.map(d=>({id:d.id,content:contentSchema.parse(d.content)})),configuration:configurationSchema.parse(config.data.content)};
+});

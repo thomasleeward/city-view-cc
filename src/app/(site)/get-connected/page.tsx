@@ -1,3 +1,5 @@
+import {proofAdminEnabled} from '@/lib/proofadmin/server';
+import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/Button";
@@ -64,7 +66,8 @@ const gospelStatements = [
   },
 ];
 
-export default function GetConnectedPage() {
+export default async function GetConnectedPage() {
+  if(proofAdminEnabled()) return <SharedPage slug="get-connected"/>;
   const connectHref = siteConfig.external.events;
   const prayerHref = siteConfig.external.prayerRequest || `mailto:${siteConfig.email}`;
 

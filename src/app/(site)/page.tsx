@@ -1,3 +1,5 @@
+import {proofAdminEnabled} from '@/lib/proofadmin/server';
+import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 import { HomeHero } from "@/components/site/HomeHero";
@@ -12,6 +14,7 @@ import {
 } from "@/lib/supabase/queries";
 
 export default async function Home() {
+  if(proofAdminEnabled()) return <SharedPage slug="home"/>;
   const [heroContent, slides, sermonSeries] = await Promise.all([
     getHeroContent(),
     getHeroSlides(),

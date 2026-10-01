@@ -1,5 +1,6 @@
 "use client";
 
+import type {SiteConfiguration} from "@/lib/proofadmin/site-configuration";
 import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
@@ -8,14 +9,15 @@ import { Button } from "@/components/ui/Button";
 import { siteConfig } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+const defaultNavItems = [
   { label: "About", href: "/about" },
   { label: "Connect", href: "/get-connected" },
   { label: "Sermons", href: "/sermon-archive" },
   { label: "Events", href: siteConfig.external.events },
 ];
 
-export function Header() {
+export function Header({configuration}:{configuration?:SiteConfiguration}) {
+  const navItems=configuration?configuration.navigation.filter(n=>n.location==='header'&&n.is_visible).sort((a,b)=>a.sort_order-b.sort_order).map(n=>({label:n.label,href:n.action_kind==='url'?n.action_value:n.action_kind==='page'?'/'+n.action_value:n.action_kind==='section'?'/#'+n.action_value:'/?screen='+n.action_value})):defaultNavItems;
   const [open, setOpen] = useState(false);
 
   return (
