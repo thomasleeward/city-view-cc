@@ -84,3 +84,10 @@ Current admin features:
 - Replace Events placeholder with Church Center / Planning Center URL.
 - Confirm whether Giving remains SecureGive or moves to another provider.
 - Add Planning Center API integration later once credentials and API scope are known.
+
+
+### Shared assessments (migration branch)
+
+The shared-mode server sends validated answers to Proof Admin using the server-only `CITY_VIEW_ASSESSMENT_KEY`. Never expose this key with a `NEXT_PUBLIC_` prefix. Existing Planning Center credentials stay on this Vercel project. `/api/proofadmin/planning-center` accepts only one-use jobs created by authorized City View staff. Sync also requires `PROOFADMIN_PCO_WRITES=true` and a Production deployment; keep it false during review. Tests use synthetic mocked Planning Center responses (`npm test`). Public assessment submissions remain disabled in previews. The public site continues using the original backend until the reviewed cutover.
+
+`/planyourvisit` uses shared Clean Links in shared mode and retains the original permanent redirect plus campaign parameters. Legacy mode retains its Next redirect.
