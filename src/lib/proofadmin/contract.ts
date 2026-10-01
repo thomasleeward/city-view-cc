@@ -86,7 +86,7 @@ export const cardSchema = z.object({
   details: z.array(z.string().max(1000)).max(20).optional(),
   hidden: z.boolean().optional(),
   video: imageUrl.optional(),
-  seriesDates: z.object({start: z.string().max(10), end: z.string().max(10)}).strict().optional(),
+  seriesDates: z.object({start: z.union([z.literal(''),z.iso.date()]), end: z.union([z.literal(''),z.iso.date()])}).strict().optional(),
 });
 export const blockSchema = z.object({
   id,
@@ -133,8 +133,9 @@ export const sectionTypes = [
   "pastors",
   "marquee",
 ] as const;
+export const nativeGroupPresentation:Record<string,string>={'slideshow':'slides','sermon-series':'series','ministries':'ministries','team':'team','beliefs':'beliefs','connect-groups':'groups','serve-teams':'teams','gospel':'beliefs'};
 export const nativeSectionSchema = z.object({
-  template: z.string().regex(/^city-view-[a-z0-9-]+$/).max(100),
+  template: z.enum(['city-view-home-0','city-view-home-1','city-view-home-2','city-view-home-3','city-view-home-4','city-view-home-5','city-view-about-0','city-view-about-1','city-view-about-2','city-view-about-3','city-view-get-connected-0','city-view-get-connected-1','city-view-get-connected-2','city-view-get-connected-3','city-view-get-connected-4','city-view-get-connected-5','city-view-sermon-archive-0','city-view-sermon-archive-1']),
   fields: z.array(z.object({id, label, type: z.enum(['text','richtext','image','url']), value: text}).strict().superRefine((v,c)=>{
     if((v.type==='url'&&!safeUrl.safeParse(v.value).success)||(v.type==='image'&&!imageUrl.safeParse(v.value).success)) c.addIssue({code:'custom',path:['value'],message:'Enter a valid image or link address.'});
   })).max(60),

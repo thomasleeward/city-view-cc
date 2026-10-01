@@ -12,8 +12,8 @@ import type {SiteConfiguration} from './site-configuration';
 import {siteConfig as defaults} from '@/lib/config';
 export function field(section:CmsSection,id:string){return section.native?.fields.find(f=>f.id===id)?.value??'';}
 export function adaptConfiguration(configuration:SiteConfiguration){
- const {settings:s,navigation}=configuration;
- return {...defaults,name:s.church_name,email:s.email,serviceTimes:s.services,address:{line1:s.address,city:s.city_state_zip,state:'',postalCode:''},social:{...defaults.social,instagram:s.instagram,youtube:s.youtube,facebook:navigation.find(n=>n.location==='footer'&&n.label==='Facebook')?.action_value??defaults.social.facebook},external:{...defaults.external,events:navigation.find(n=>n.label==='Events')?.action_value??defaults.external.events}};
+ const {settings:s,navigation}=configuration;const place=s.city_state_zip.match(/^(.*),\s*(\S+)\s+(.*)$/);
+ return {...defaults,name:s.church_name,email:s.email,serviceTimes:s.services,address:{line1:s.address,city:place?.[1]??s.city_state_zip,state:place?.[2]??'',postalCode:place?.[3]??''},social:{...defaults.social,instagram:s.instagram,youtube:s.youtube,facebook:navigation.find(n=>n.location==='footer'&&n.label==='Facebook')?.action_value??defaults.social.facebook},external:{...defaults.external,events:navigation.find(n=>n.label==='Events')?.action_value??defaults.external.events}};
 }
 export function NativeSection({s,groups,configuration}:{s:CmsSection;groups:Record<string,GroupContent>;configuration:SiteConfiguration}){
  const cards=(key:string)=>{const id=s.native?.groups.find(g=>g.key===key)?.id;return (id?groups[id]?.cards??[]:[]).filter(c=>!c.hidden);};
