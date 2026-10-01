@@ -1,9 +1,11 @@
 "use server";
 
+import {submitSharedAssessment} from "@/lib/assessments/submit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { AssessmentType } from "@/lib/assessments/data";
 
 export type SaveAssessmentInput = {
+  id:string;
   name: string;
   email: string;
   assessmentType: AssessmentType;
@@ -14,7 +16,11 @@ export type SaveAssessmentInput = {
 };
 
 export async function saveAssessment(input: SaveAssessmentInput) {
-  if (process.env.PROOFADMIN_ENABLED === 'true' || process.env.VERCEL_ENV === 'preview') return {ok:false,message:'Assessment submissions are disabled in this review preview. Please use the live City View website.'};
+  if (process.env.VERCEL_ENV === 'preview') return {ok:false,message:'Assessment submissions are disabled in this review preview. Please use the live City View website.'};
+  if(process.env.PROOFADMIN_ENABLED==='true'){
+    try{await submitSharedAssessment(input);return {ok:true,message:'Your results have been saved.'};}
+    catch{return {ok:false,message:'Your results could not be saved. Please try again later.'};}
+  }
   const supabase = createAdminClient();
 
   if (!supabase) {

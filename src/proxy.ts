@@ -7,10 +7,16 @@ export async function proxy(request: NextRequest) {
   if (process.env.PROOFADMIN_ENABLED === "true") {
     if(/^\/admin(\/|$)/.test(request.nextUrl.pathname)) return NextResponse.redirect('https://login.proofcreatives.com/admin');
     const url=process.env.PROOFADMIN_SUPABASE_URL,key=process.env.PROOFADMIN_PUBLISHABLE_KEY,site=process.env.PROOFADMIN_SITE_ID;
-    if(url==='https://lqhgemgmduxhvmfurtob.supabase.co'&&key&&site==='10000000-0000-4000-8000-000000000003'&&request.method==='GET'){
+    if(url==='https://lqhgemgmduxhvmfurtob.supabase.co'&&key&&site==='10000000-0000-4000-8000-000000000003'&&['GET','HEAD'].includes(request.method)){
       const query=new URLSearchParams({select:'target,status',site_id:`eq.${site}`,path:`eq.${request.nextUrl.pathname}`});
       const response=await fetch(`${url}/rest/v1/clean_links?${query}`,{headers:{apikey:key},cache:'no-store'});
-      if(response.ok){const link=(await response.json())[0];if(link&&/^https:\/\//.test(link.target)&&[301,302,307,308].includes(link.status))return NextResponse.redirect(new URL(link.target),link.status);}
+      if(response.ok){const link=(await response.json())[0];if(link&&/^https:\/\//.test(link.target)&&[301,302,307,308].includes(link.status)){
+        const target=new URL(link.target);
+        // Match the original Next redirect: retain incoming campaign parameters.
+        const fixedKeys=new Set(target.searchParams.keys());
+        for(const [name,value] of request.nextUrl.searchParams)if(!fixedKeys.has(name))target.searchParams.append(name,value);
+        return NextResponse.redirect(target,link.status);
+      }}
     }
     return NextResponse.next();
   }
