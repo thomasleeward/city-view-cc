@@ -91,3 +91,10 @@ Current admin features:
 The shared-mode server sends validated answers to Proof Admin using the server-only `CITY_VIEW_ASSESSMENT_KEY`. Never expose this key with a `NEXT_PUBLIC_` prefix. Existing Planning Center credentials stay on this Vercel project. `/api/proofadmin/planning-center` accepts only one-use jobs created by authorized City View staff. Sync also requires `PROOFADMIN_PCO_WRITES=true` and a Production deployment; keep it false during review. Tests use synthetic mocked Planning Center responses (`npm test`). Public assessment submissions remain disabled in previews. The public site continues using the original backend until the reviewed cutover.
 
 `/planyourvisit` uses shared Clean Links in shared mode and retains the original permanent redirect plus campaign parameters. Legacy mode retains its Next redirect.
+
+
+## Live Proof Admin connection
+
+As of October 1, 2026, `www.cityviewcc.com` uses Proof Admin for published content, settings, Clean Links and private assessment submissions. Staff sign in at `https://login.proofcreatives.com`; the builder preview uses the permanent `/proof-preview` route. Both production Planning Center write flags are enabled for explicitly confirmed staff sync. Preview deployments continue to reject assessment submissions and Planning Center writes. The original two already-synced assessment records were preserved without resending them.
+
+Both public assessment types, the permanent embedded preview, tenant isolation, authenticated read-only Planning Center field mapping and the visit redirect passed live verification. No real-person Planning Center write was performed as a test. The private recovery package and full cutover record are maintained in the adjacent Proof Admin repository. The original backend is ready for owner retirement after securely retaining that backup; it has not been deleted automatically.
