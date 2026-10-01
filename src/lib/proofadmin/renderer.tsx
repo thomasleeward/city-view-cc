@@ -14,7 +14,7 @@ import type {SiteConfiguration} from './site-configuration';
 export type Document={id:string;content:Content};
 const href=(a:ContentAction)=>a.kind==='screen'?`#proof-screen-${a.value}`:a.value;
 export function Group({group}:{group:GroupContent}){
- const cards=group.cards.filter(c=>!c.hidden);
+ const cards=group.cards.filter(c=>!c.hidden);if(group.presentation==='series')cards.sort((a,b)=>(b.seriesDates?.start??'').localeCompare(a.seriesDates?.start??''));
  if(group.presentation==='slides')return <HeroCarousel content={{eyebrow:'',headline:'',subheadline:'',ctaLabel:'',ctaHref:''}} slides={cards.map((c,i)=>({id:c.id,imageUrl:c.image||null,videoUrl:c.video||null,sortOrder:i}))}/>;
  return <div className="grid gap-5 md:grid-cols-3">{cards.map(c=><div key={c.id} id={`proof-item-${c.id}`} data-proof-item={c.id}>
  {group.presentation==='series'?<SermonSeriesCard series={{id:c.id,name:c.title,dateLabel:c.description,startDate:c.seriesDates?.start??'',endDate:c.seriesDates?.end??null,imageUrl:c.image,youtubePlaylistUrl:c.action.value,isPublished:true}}/>:<article className="overflow-hidden rounded-lg bg-white shadow-sm">

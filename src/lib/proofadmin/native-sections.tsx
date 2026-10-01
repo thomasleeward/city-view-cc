@@ -19,7 +19,7 @@ export function NativeSection({s,groups,configuration}:{s:CmsSection;groups:Reco
  const cards=(key:string)=>{const id=s.native?.groups.find(g=>g.key===key)?.id;return (id?groups[id]?.cards??[]:[]).filter(c=>!c.hidden);};
  const siteConfig=adaptConfiguration(configuration);
  const slides=cards('slideshow').map((c,i)=>({id:c.id,imageUrl:c.image||null,videoUrl:c.video||null,sortOrder:i}));
- const sermonSeries=cards('sermon-series').map(c=>({id:c.id,name:c.title,dateLabel:c.description,startDate:c.seriesDates?.start??'',endDate:c.seriesDates?.end??null,imageUrl:c.image,youtubePlaylistUrl:c.action.value,isPublished:true}));
+ const sermonSeries=cards('sermon-series').sort((a,b)=>(b.seriesDates?.start??'').localeCompare(a.seriesDates?.start??'')).map(c=>({id:c.id,name:c.title,dateLabel:c.description,startDate:c.seriesDates?.start??'',endDate:c.seriesDates?.end??null,imageUrl:c.image,youtubePlaylistUrl:c.action.value,isPublished:true}));
  const latestSeries=sermonSeries.slice(0,3),series=sermonSeries,latest=series[0],archiveSeries=series.slice(1);
  const ministryCards=cards('ministries').map(c=>({title:c.title,details:c.details,description:c.description,imageUrl:c.image,href:c.action.value}));
  const team=cards('team');const lead=team[0];
