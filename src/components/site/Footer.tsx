@@ -1,8 +1,11 @@
+import type {SiteConfiguration} from '@/lib/proofadmin/site-configuration';
+import {adaptConfiguration} from '@/lib/proofadmin/native-sections';
 import Image from "next/image";
 import Link from "next/link";
-import { siteConfig } from "@/lib/config";
+import { siteConfig as defaultConfig } from "@/lib/config";
 
-export function Footer() {
+export function Footer({configuration}:{configuration?:SiteConfiguration}) {
+  const siteConfig=configuration?adaptConfiguration(configuration):defaultConfig;
   return (
     <footer className="bg-ink text-white">
       <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.2fr_0.8fr_0.8fr]">
@@ -17,8 +20,7 @@ export function Footer() {
             />
           </Link>
           <p className="mt-4 max-w-md text-white/70">
-            Discover your purpose. Live on mission. We would love to meet you
-            this Sunday in Santee.
+            {configuration?.settings.footer_tagline??'Discover your purpose. Live on mission. We would love to meet you this Sunday in Santee.'}
           </p>
         </div>
         <div>
@@ -29,8 +31,7 @@ export function Footer() {
           <p className="mt-2 text-white/70">
             {siteConfig.address.line1}
             <br />
-            {siteConfig.address.city}, {siteConfig.address.state}{" "}
-            {siteConfig.address.postalCode}
+            {configuration?configuration.settings.city_state_zip:`${siteConfig.address.city}, ${siteConfig.address.state} ${siteConfig.address.postalCode}`}
           </p>
         </div>
         <div>

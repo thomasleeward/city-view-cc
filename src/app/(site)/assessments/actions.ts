@@ -14,6 +14,7 @@ export type SaveAssessmentInput = {
 };
 
 export async function saveAssessment(input: SaveAssessmentInput) {
+  if (process.env.PROOFADMIN_ENABLED === 'true' || process.env.VERCEL_ENV === 'preview') return {ok:false,message:'Assessment submissions are disabled in this review preview. Please use the live City View website.'};
   const supabase = createAdminClient();
 
   if (!supabase) {

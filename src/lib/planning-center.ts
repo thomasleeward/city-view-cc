@@ -79,6 +79,7 @@ function envOrDefault(name: string, fallback: string) {
 }
 
 function getPlanningCenterHeaders() {
+  if (process.env.VERCEL_ENV === "preview" || process.env.PROOFADMIN_ENABLED === "true") return null;
   const appId = process.env.PLANNING_CENTER_APP_ID;
   const secret = process.env.PLANNING_CENTER_SECRET;
 
@@ -95,6 +96,7 @@ function getPlanningCenterHeaders() {
 }
 
 function getPlanningCenterUploadHeaders() {
+  if (process.env.VERCEL_ENV === "preview" || process.env.PROOFADMIN_ENABLED === "true") return null;
   const appId = process.env.PLANNING_CENTER_APP_ID;
   const secret = process.env.PLANNING_CENTER_SECRET;
 

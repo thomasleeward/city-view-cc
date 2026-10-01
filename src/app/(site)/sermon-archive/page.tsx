@@ -1,3 +1,5 @@
+import {proofAdminEnabled} from '@/lib/proofadmin/server';
+import {SharedPage} from '@/lib/proofadmin/page';
 import type { Metadata } from "next";
 import { PageHero } from "@/components/site/PageHero";
 import { Section } from "@/components/site/Section";
@@ -11,6 +13,7 @@ export const metadata: Metadata = {
 };
 
 export default async function SermonArchivePage() {
+  if(proofAdminEnabled()) return <SharedPage slug="sermon-archive"/>;
   const series = await getSermonSeries();
   const latest = series[0];
   const archiveSeries = latest ? series.slice(1) : series;
