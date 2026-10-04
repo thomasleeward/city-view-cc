@@ -7,6 +7,7 @@ import {SermonSeriesCard} from '@/components/site/SermonSeriesCard';
 import {HeroCarousel} from '@/components/site/HeroCarousel';
 import {Header} from '@/components/site/Header';
 import {Footer} from '@/components/site/Footer';
+import {withSermons,type PublishedSermon} from './sermons';
 import {NativeSection} from './native-sections';
 import {RichInline,RichParagraphs,RichList} from './rich-text';
 import {type Content,type ContentAction,type GroupContent,type ScreenContent,type Section} from './contract';
@@ -35,9 +36,9 @@ function StandardSection({s,groups}:{s:Section;groups:Record<string,GroupContent
 function Screen({content,groups,close}:{content:ScreenContent;groups:Record<string,GroupContent>;close:()=>void}){
  return <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={content.title}><div className="mx-auto max-w-4xl rounded-lg p-8" style={{background:content.appearance.background,color:content.appearance.text}}><button type="button" onClick={close} className="float-right rounded border px-4 py-2">Close</button><p>{content.eyebrow}</p><h1 className="font-display text-4xl">{content.title}</h1><RichParagraphs text={content.intro}/>{content.blocks.map(b=><div key={b.id} id={`proof-item-${b.id}`} data-proof-item={b.id} className="mt-6">{b.type==='card_group'?groups[b.groupId]&&<Group group={groups[b.groupId]}/>:b.type==='image'?b.image&&<Image src={b.image} alt={b.alt} width={1000} height={650}/>:b.type==='button'?<Button href={href(b.action)}>{b.action.label}</Button>:b.type==='spacer'?<div style={{height:b.size}}/>:<>{b.caption&&<h2 className="font-display text-2xl">{b.caption}</h2>}{b.type==='list'?<ul><RichList text={b.text}/></ul>:<RichParagraphs text={b.text}/>}</>}</div>)}</div></div>;
 }
-export function Website({documents,content,configuration,frame=true}:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean}){
+export function Website({documents,content,configuration,frame=true,sermons}:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){
  const [opened,setOpened]=useState<string|null>(null);
- const groups=Object.fromEntries(documents.flatMap(d=>d.content.kind==='card_group'?[[d.id,d.content]]:[])) as Record<string,GroupContent>;
+ const groups=Object.fromEntries(documents.flatMap(d=>d.content.kind==='card_group'?[[d.id,sermons&&d.content.presentation==='series'?withSermons(d.content,sermons):d.content]]:[])) as Record<string,GroupContent>;
  const screen=documents.find(d=>d.id===opened)?.content;
  return <div onClickCapture={e=>{const link=(e.target as HTMLElement).closest('a');const target=link?.getAttribute('href');if(target?.startsWith('#proof-screen-')){e.preventDefault();setOpened(target.slice('#proof-screen-'.length));}}}>
  {frame&&<Header configuration={configuration}/>}

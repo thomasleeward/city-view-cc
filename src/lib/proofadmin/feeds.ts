@@ -4,7 +4,7 @@ const image=link.refine(v=>!v||v.startsWith('https://')||v.startsWith('/'),'Use 
 const base={title:z.string().trim().min(1).max(200),description:z.string().max(10000),image};
 export const feedSchema=z.discriminatedUnion('kind',[
  z.object({...base,kind:z.literal('event'),startsAt:z.iso.datetime({offset:true}),endsAt:z.union([z.literal(''),z.iso.datetime({offset:true})]),timezone:z.string().max(100).refine(v=>{try{new Intl.DateTimeFormat('en',{timeZone:v});return true;}catch{return false;}},'Choose a valid time zone.'),allDay:z.boolean(),location:z.string().max(500),actionLabel:z.string().max(100),actionUrl:link}).strict(),
- z.object({...base,kind:z.literal('sermon'),date:z.iso.date(),speaker:z.string().max(200),series:z.string().max(200),scripture:z.string().max(500),topics:z.array(z.string().trim().min(1).max(100)).max(30),videoUrl:link,audioUrl:link,featured:z.boolean()}).strict(),
+ z.object({...base,kind:z.literal('sermon'),date:z.iso.date(),entryType:z.enum(['sermon','series']).optional(),seriesId:z.union([z.literal(''),z.uuid()]).optional(),endDate:z.union([z.literal(''),z.iso.date()]).optional(),speaker:z.string().max(200),series:z.string().max(200),scripture:z.string().max(500),topics:z.array(z.string().trim().min(1).max(100)).max(30),videoUrl:link,audioUrl:link,featured:z.boolean()}).strict(),
 ]).superRefine((v,c)=>{if(v.kind==='event'&&v.endsAt&&Date.parse(v.endsAt)<Date.parse(v.startsAt))c.addIssue({code:'custom',path:['endsAt'],message:'End must be after the start.'});});
 export type Feed=z.infer<typeof feedSchema>;
 export type FeedKind=Feed['kind'];

@@ -33,7 +33,7 @@ export function SermonSeriesCard({ series }: { series: SermonSeries }) {
           variant="ghost"
           className="mt-5 w-full justify-between"
         >
-          View Series <ExternalLink size={16} />
+          Watch <ExternalLink size={16} />
         </Button>
       </div>
     </article>

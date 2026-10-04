@@ -365,7 +365,7 @@ case 'city-view-sermon-archive-1': return (<Section>
           <div className="mb-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <YouTubePlaylistEmbed
               url={latest.youtubePlaylistUrl}
-              title={`${latest.name} playlist`}
+              title={latest.name}
             />
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.18em] text-terracotta">
@@ -374,6 +374,7 @@ case 'city-view-sermon-archive-1': return (<Section>
                 {latest.name}
               </h2>
               <p className="mt-3 text-lg text-muted">{latest.dateLabel}</p>
+              <Button href={latest.youtubePlaylistUrl} className="mt-5">Watch</Button>
             </div>
           </div>
         )}

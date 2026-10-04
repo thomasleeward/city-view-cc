@@ -1,21 +1,14 @@
-function getPlaylistId(url: string) {
-  try {
-    return new URL(url).searchParams.get("list");
-  } catch {
-    return null;
-  }
-}
-
+import {youtubeEmbedUrl} from '@/lib/youtube';
 export function YouTubePlaylistEmbed({ url, title }: { url: string; title: string }) {
-  const playlistId = getPlaylistId(url);
+  const embedUrl = youtubeEmbedUrl(url);
 
-  if (!playlistId) return null;
+  if (!embedUrl) return null;
 
   return (
     <div className="aspect-video overflow-hidden rounded-lg bg-ink">
       <iframe
         className="size-full"
-        src={`https://www.youtube.com/embed/videoseries?list=${playlistId}`}
+        src={embedUrl}
         title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         allowFullScreen
