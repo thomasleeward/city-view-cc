@@ -7,6 +7,7 @@ type ButtonProps = {
   variant?: "primary" | "secondary" | "ghost" | "light";
   className?: string;
   type?: "button" | "submit";
+  style?: React.CSSProperties;
 };
 
 const variants = {
@@ -26,6 +27,7 @@ export function Button({
   variant = "primary",
   className,
   type = "button",
+  style,
 }: ButtonProps) {
   const classes = cn(
     "inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-md px-5 py-3 text-center text-sm font-bold uppercase leading-tight tracking-wide whitespace-normal transition",
@@ -36,21 +38,21 @@ export function Button({
   if (href) {
     if (isExternalHref(href)) {
       return (
-        <a className={classes} href={href}>
+        <a className={classes} style={style} href={href}>
           {children}
         </a>
       );
     }
 
     return (
-      <Link className={classes} href={href}>
+      <Link className={classes} style={style} href={href}>
         {children}
       </Link>
     );
   }
 
   return (
-    <button className={classes} type={type}>
+    <button className={classes} style={style} type={type}>
       {children}
     </button>
   );

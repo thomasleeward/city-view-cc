@@ -55,6 +55,7 @@ export const appearanceSchema = z.object({
 export const actionSchema = z
   .object({
     label: z.string().max(100),
+    colors: z.object({ background: color.optional(), text: color.optional() }).optional(),
     kind: z.enum(["url", "screen"]),
     value: z.string().max(2000),
   })
