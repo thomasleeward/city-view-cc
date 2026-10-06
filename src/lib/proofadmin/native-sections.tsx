@@ -6,7 +6,7 @@ import {PageHero} from '@/components/site/PageHero';
 import {SermonSeriesCard} from '@/components/site/SermonSeriesCard';
 import {YouTubePlaylistEmbed} from '@/components/site/YouTubePlaylistEmbed';
 import {StatementOfFaith} from '@/components/site/StatementOfFaith';
-import {RichInline} from './rich-text';
+import {RichInline,richPlainText} from './rich-text';
 import type {Section as CmsSection,GroupContent} from './contract';
 import type {SiteConfiguration} from './site-configuration';
 import {siteConfig as defaults} from '@/lib/config';
@@ -35,7 +35,7 @@ case 'city-view-home-0': return (<HomeHero content={{eyebrow:field(s,'eyebrow'),
 case 'city-view-home-1': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div className="space-y-5 text-lg leading-8 text-muted">
-            <p>{field(s,'field-2')}</p>
+            <p><RichInline text={field(s,'field-2')}/></p>
             <p>
               <RichInline text={field(s,'field-3')}/></p>
           </div>
@@ -52,7 +52,7 @@ case 'city-view-home-1': return (<Section className="bg-white" title={field(s,'f
               {siteConfig.address.postalCode}
             </p>
             <Button href={field(s,'field-6')} className="mt-6">
-              {field(s,'field-7')}</Button>
+              <RichInline text={field(s,'field-7')}/></Button>
           </div>
         </div>
       </Section>);
@@ -77,15 +77,15 @@ case 'city-view-home-2': return (<Section
                 />
               </div>
               <div className="p-5">
-                <h3 className="font-display text-2xl font-bold">{card.title}</h3>
+                <h3 className="font-display text-2xl font-bold"><RichInline text={card.title}/></h3>
                 {"details" in card && card.details ? (
                   <div className="mt-3 space-y-1 font-bold text-terracotta">
                     {card.details.map((detail) => (
-                      <p key={detail}>{detail}</p>
+                      <p key={detail}><RichInline text={detail}/></p>
                     ))}
                   </div>
                 ) : null}
-                <p className="mt-3 text-muted">{card.description}</p>
+                <p className="mt-3 text-muted"><RichInline text={card.description}/></p>
               </div>
             </article>
           ))}
@@ -96,7 +96,7 @@ case 'city-view-home-3': return (<Section className="bg-green text-white">
           <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
             <RichInline text={field(s,'field-0')}/></p>
           <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
-            {field(s,'field-1')}</h2>
+            <RichInline text={field(s,'field-1')}/></h2>
           <p className="mt-4 text-lg leading-8 text-white/80">
             <RichInline text={field(s,'field-2')}/></p>
         </div>
@@ -106,14 +106,14 @@ case 'city-view-home-3': return (<Section className="bg-green text-white">
           ))}
         </div>
         <Button href={field(s,'field-3')} variant="light" className="mt-8">
-          {field(s,'field-4')}</Button>
+          <RichInline text={field(s,'field-4')}/></Button>
       </Section>);
 case 'city-view-home-4': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
           <p className="max-w-3xl text-lg leading-8 text-muted">
             <RichInline text={field(s,'field-2')}/></p>
           <Button href={field(s,'field-3')} variant="secondary">
-            {field(s,'field-4')}</Button>
+            <RichInline text={field(s,'field-4')}/></Button>
         </div>
       </Section>);
 case 'city-view-home-5': return (<section className="bg-[#ee5f01] py-12 text-white sm:py-16">
@@ -122,7 +122,7 @@ case 'city-view-home-5': return (<section className="bg-[#ee5f01] py-12 text-whi
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-white/80">
               <RichInline text={field(s,'field-0')}/></p>
             <h2 className="mt-3 font-display text-3xl font-bold text-white sm:text-5xl">
-              {field(s,'field-1')}</h2>
+              <RichInline text={field(s,'field-1')}/></h2>
             <p className="mt-5 max-w-4xl text-lg leading-8 text-white/90">
               <RichInline text={field(s,'field-2')}/></p>
           </div>
@@ -131,7 +131,7 @@ case 'city-view-home-5': return (<section className="bg-[#ee5f01] py-12 text-whi
             variant="light"
             className="w-full lg:w-auto"
           >
-            {field(s,'field-4')}</Button>
+            <RichInline text={field(s,'field-4')}/></Button>
         </div>
       </section>);
 case 'city-view-about-0': return (<PageHero
@@ -170,9 +170,9 @@ case 'city-view-about-2': return (<Section className="bg-white" title={field(s,'
           </div>
           <div className="text-center lg:text-left">
             <h2 className="font-display text-4xl font-bold">
-              {leadPastors.name}
+              <RichInline text={leadPastors.name}/>
             </h2>
-            <p className="mt-2 text-2xl text-ink">{leadPastors.role}</p>
+            <p className="mt-2 text-2xl text-ink"><RichInline text={leadPastors.role}/></p>
             <a
               className="mt-2 block font-semibold text-terracotta"
               href={`mailto:${leadPastors.email}`}
@@ -182,7 +182,7 @@ case 'city-view-about-2': return (<Section className="bg-white" title={field(s,'
             <div className="mx-auto my-6 h-px w-64 max-w-full bg-ink/20 lg:mx-0" />
             <div className="space-y-5 text-lg leading-8 text-muted">
               {leadPastors.bio.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+                <p key={paragraph}><RichInline text={paragraph}/></p>
               ))}
             </div>
           </div>
@@ -204,16 +204,16 @@ case 'city-view-about-2': return (<Section className="bg-white" title={field(s,'
                     aria-hidden="true"
                     className="flex h-full items-center justify-center bg-ink/10 font-display text-5xl font-bold text-ink/45"
                   >
-                    {person.name
+                    {richPlainText(person.name)
                       .split(" ")
                       .map((name) => name[0])
                       .join("")}
                   </div>
                 )}
               </div>
-              <h3 className="mt-4 font-display text-2xl font-bold">{person.name}</h3>
+              <h3 className="mt-4 font-display text-2xl font-bold"><RichInline text={person.name}/></h3>
               {person.role ? (
-                <p className="font-semibold text-terracotta">{person.role}</p>
+                <p className="font-semibold text-terracotta"><RichInline text={person.role}/></p>
               ) : null}
               {person.email ? (
                 <a className="mt-2 block text-sm text-muted" href={`mailto:${person.email}`}>
@@ -246,11 +246,11 @@ case 'city-view-get-connected-1': return (<Section className="bg-white" title={f
                 />
               </div>
               <h2 className="mt-5 font-display text-3xl font-bold">
-                {card.title}
+                <RichInline text={card.title}/>
               </h2>
-              <p className="mt-4 leading-7 text-muted">{card.description}</p>
+              <p className="mt-4 leading-7 text-muted"><RichInline text={card.description}/></p>
               <Button href={card.href} className="mt-6">
-                {card.cta}
+                <RichInline text={card.cta}/>
               </Button>
             </article>
           ))}
@@ -270,7 +270,7 @@ case 'city-view-get-connected-2': return (<Section title={field(s,'field-0')} ey
           </div>
           <article className="flex flex-col justify-center rounded-lg bg-white p-6 shadow-sm sm:p-8">
             <h2 className="font-display text-3xl font-bold text-ink">
-              {field(s,'field-3')}</h2>
+              <RichInline text={field(s,'field-3')}/></h2>
             <div className="mt-4 space-y-4 leading-7 text-muted">
               <p>
                 <RichInline text={field(s,'field-4')}/></p>
@@ -284,7 +284,7 @@ case 'city-view-get-connected-2': return (<Section title={field(s,'field-0')} ey
                 <RichInline text={field(s,'field-8')}/></p>
             </div>
             <Button href={connectHref} className="mt-6">
-              {field(s,'field-9')}</Button>
+              <RichInline text={field(s,'field-9')}/></Button>
           </article>
         </div>
       </Section>);
@@ -293,7 +293,7 @@ case 'city-view-get-connected-3': return (<Section className="bg-green text-whit
           <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
             <RichInline text={field(s,'field-0')}/></p>
           <h2 className="font-display text-3xl font-bold text-white sm:text-5xl">
-            {field(s,'field-1')}</h2>
+            <RichInline text={field(s,'field-1')}/></h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {serveTeams.map((team) => (
@@ -303,14 +303,14 @@ case 'city-view-get-connected-3': return (<Section className="bg-green text-whit
           ))}
         </div>
         <Button href={connectHref} variant="light" className="mt-8">
-          {field(s,'field-2')}</Button>
+          <RichInline text={field(s,'field-2')}/></Button>
       </Section>);
 case 'city-view-get-connected-4': return (<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-6">
           <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
             <div className="mx-auto max-w-5xl text-left">
               <h2 className="font-display text-4xl font-bold text-ink">
-                {field(s,'field-2')}</h2>
+                <RichInline text={field(s,'field-2')}/></h2>
               <div className="mt-6">
                 <StatementOfFaith
                   intro={field(s,'field-3')}
@@ -328,23 +328,23 @@ case 'city-view-get-connected-4': return (<Section title={field(s,'field-0')} ey
           <div className="grid gap-6 md:grid-cols-2">
             <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
               <h2 className="font-display text-3xl font-bold text-ink">
-                {field(s,'field-5')}</h2>
+                <RichInline text={field(s,'field-5')}/></h2>
               <p className="mt-4 leading-7 text-muted">
                 <RichInline text={field(s,'field-6')}/></p>
               <Button href={connectHref} className="mt-6">
-                {field(s,'field-7')}</Button>
+                <RichInline text={field(s,'field-7')}/></Button>
             </article>
 
             <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
               <h2 className="font-display text-3xl font-bold text-ink">
-                {field(s,'field-8')}</h2>
+                <RichInline text={field(s,'field-8')}/></h2>
               <p className="mt-4 leading-7 text-muted">
                 <RichInline text={field(s,'field-9')}/></p>
               <Button
                 href={field(s,'field-10')}
                 className="mt-6"
               >
-                {field(s,'field-11')}</Button>
+                <RichInline text={field(s,'field-11')}/></Button>
             </article>
           </div>
         </div>
@@ -353,7 +353,7 @@ case 'city-view-get-connected-5': return (<Section title={field(s,'field-0')} ey
         <p className="max-w-3xl text-lg leading-8 text-muted">
           <RichInline text={field(s,'field-2')}/></p>
         <Button href={prayerHref} className="mt-6">
-          {field(s,'field-3')}</Button>
+          <RichInline text={field(s,'field-3')}/></Button>
       </Section>);
 case 'city-view-sermon-archive-0': return (<PageHero
         eyebrow={field(s,'field-0')}

@@ -1,3 +1,5 @@
+
+import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 import Image from "next/image";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -17,16 +19,16 @@ export function SermonSeriesCard({ series }: { series: SermonSeries }) {
           />
         ) : (
           <div className="flex size-full items-center justify-center bg-green text-white">
-            <span className="font-display text-3xl">{series.name}</span>
+            <span className="font-display text-3xl"><RichInline text={series.name}/></span>
           </div>
         )}
       </div>
       <div className="p-5">
         <p className="text-sm font-bold uppercase tracking-[0.16em] text-terracotta">
-          {series.dateLabel}
+          <RichInline text={series.dateLabel}/>
         </p>
         <h3 className="mt-2 font-display text-2xl font-bold text-ink">
-          {series.name}
+          <RichInline text={series.name}/>
         </h3>
         <Button
           href={series.youtubePlaylistUrl}

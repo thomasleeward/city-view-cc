@@ -1,4 +1,6 @@
 "use client";
+import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
+
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -60,19 +62,19 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/20" />
       <div className="relative mx-auto flex min-h-[680px] max-w-6xl flex-col justify-end px-5 pb-20 pt-32">
         <p className="mb-4 w-fit rounded-full bg-gold px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm">
-          {content.eyebrow}
+          <RichInline text={content.eyebrow}/>
         </p>
         <h1 className="max-w-4xl font-display text-4xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-          {content.headline}
+          <RichInline text={content.headline}/>
         </h1>
         {content.subheadline && (
           <p className="mt-6 max-w-2xl text-xl leading-8 text-white/85">
-            {content.subheadline}
+            <RichInline text={content.subheadline}/>
           </p>
         )}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button href={content.ctaHref} variant="light">
-            {content.ctaLabel}
+            <RichInline text={content.ctaLabel}/>
           </Button>
           <Button href="/sermon-archive" variant="secondary">
             Watch Sermons

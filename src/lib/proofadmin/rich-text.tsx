@@ -92,29 +92,15 @@ function formatInline(text: string, keyPrefix: string, depth = 0): ReactNode[] {
   return nodes;
 }
 
-export function RichInline({ text }: { text: string }) {
+export function RichInline({ text, links = true }: { text: string; links?: boolean }) {
   const document = readDocument(text);
-  if (document)
-    return (
-      <>
-        {document.content?.map((paragraph, index) => (
-          <span key={index}>
-            {index > 0 && (
-              <>
-                <br />
-                <br />
-              </>
-            )}
-            {renderDocumentNodes(paragraph.content ?? [])}
-          </span>
-        ))}
-      </>
-    );
-  return <>{formatInline(text, "rich")}</>;
+  if (document) return <>{renderDocumentNodes(document.content ?? [], links)}</>;
+  return <>{text.split('\n').map((line,index)=><span key={index}>{index>0&&<br/>}{formatInline(line,'rich-'+index)}</span>)}</>;
 }
 
 export type RichDocumentNode = {
   type: string;
+  attrs?: {textAlign?: string};
   text?: string;
   content?: RichDocumentNode[];
   marks?: { type: string; attrs?: Record<string, unknown> }[];
@@ -139,7 +125,7 @@ function cleanNode(node: RichDocumentNode, depth = 0): RichDocumentNode | null {
     const marks: NonNullable<RichDocumentNode["marks"]> = [];
     for (const mark of Array.isArray(node.marks) ? node.marks : []) {
       if (!mark) continue;
-      if (mark.type === "bold" || mark.type === "italic")
+      if (["bold", "italic", "underline", "strike"].includes(mark.type))
         marks.push({ type: mark.type });
       if (
         mark.type === "link" &&
@@ -170,9 +156,10 @@ function cleanNode(node: RichDocumentNode, depth = 0): RichDocumentNode | null {
       ...(marks.length ? { marks } : {}),
     };
   }
-  if (node.type === "doc" || node.type === "paragraph")
+  if (["doc", "paragraph", "bulletList", "orderedList", "listItem"].includes(node.type))
     return {
       type: node.type,
+      ...(node.type === "paragraph" && ["left","center","right","justify"].includes(node.attrs?.textAlign ?? "") ? {attrs:{textAlign:node.attrs!.textAlign}} : {}),
       content: (Array.isArray(node.content) ? node.content : [])
         .map((child) => cleanNode(child, depth + 1))
         .filter((child): child is RichDocumentNode => child !== null),
@@ -190,41 +177,23 @@ function readDocument(text: string): RichDocumentNode | null {
   }
 }
 
-function renderDocumentNodes(nodes: RichDocumentNode[]): ReactNode[] {
-  return nodes.map((node, index) => {
-    if (node.type === "hardBreak") return <br key={index} />;
-    let result: ReactNode = node.text ?? "";
-    for (const mark of node.marks ?? []) {
-      if (mark.type === "bold") result = <strong>{result}</strong>;
-      if (mark.type === "italic") result = <em>{result}</em>;
-      if (mark.type === "link")
-        result = (
-          <a href={String(mark.attrs?.href)} rel="noopener noreferrer">
-            {result}
-          </a>
-        );
-      if (mark.type === "textStyle") {
-        const size =
-          typeof mark.attrs?.fontSize === "string"
-            ? Number(mark.attrs.fontSize.replace("px", ""))
-            : 0;
-        result = (
-          <span
-            style={{
-              color: mark.attrs?.color as string | undefined,
-              fontSize:
-                size > 24
-                  ? `clamp(${Math.max(24, size * 0.7)}px, ${size / 10}vw, ${size}px)`
-                  : (mark.attrs?.fontSize as string | undefined),
-            }}
-          >
-            {result}
-          </span>
-        );
-      }
-    }
-    return <span key={index}>{result}</span>;
-  });
+function renderDocumentNodes(nodes: RichDocumentNode[], links = true): ReactNode[] {
+ return nodes.map((node,index)=>{
+  if(node.type==='hardBreak')return <br key={index}/>;
+  if(node.type==='paragraph')return <span key={index} style={{display:'block',whiteSpace:'pre-wrap',textAlign:node.attrs?.textAlign as 'left'|'center'|'right'|'justify'|undefined,minHeight:'1em',...(index?{marginTop:'.5em'}:{})}}>{renderDocumentNodes(node.content??[],links)}</span>;
+  if(node.type==='bulletList'||node.type==='orderedList')return <span key={index} role="list" style={{display:'block',paddingLeft:'1.5em',marginTop:'.5em'}}>{(node.content??[]).map((item,i)=><span key={i} role="listitem" style={{display:'block',position:'relative'}}><span aria-hidden="true" style={{position:'absolute',left:'-1.5em'}}>{node.type==='orderedList'?`${i+1}.`:'•'}</span>{renderDocumentNodes(item.content??[],links)}</span>)}</span>;
+  if(node.type==='listItem'||node.type==='doc')return <span key={index}>{renderDocumentNodes(node.content??[],links)}</span>;
+  let result:ReactNode=node.text??'';
+  for(const mark of node.marks??[]){
+   if(mark.type==='bold')result=<strong style={{fontWeight:700}}>{result}</strong>;
+   if(mark.type==='italic')result=<em style={{fontStyle:'italic'}}>{result}</em>;
+   if(mark.type==='underline')result=<u>{result}</u>;
+   if(mark.type==='strike')result=<s>{result}</s>;
+   if(mark.type==='link'&&links)result=<a href={String(mark.attrs?.href)} rel="noopener noreferrer" style={{textDecoration:'underline'}}>{result}</a>;
+   if(mark.type==='textStyle')result=<span style={{color:mark.attrs?.color as string|undefined,fontSize:mark.attrs?.fontSize as string|undefined}}>{result}</span>;
+  }
+  return <span key={index} style={{whiteSpace:'pre-wrap'}}>{result}</span>;
+ });
 }
 
 function legacyNodes(
@@ -325,7 +294,7 @@ export function richPlainText(text: string): string {
     if (node.type === "hardBreak") return "\n";
     return (node.content ?? [])
       .map(plain)
-      .join(node.type === "doc" ? "\n\n" : "");
+      .join(["doc","bulletList","orderedList"].includes(node.type) ? "\n" : "");
   }
   return plain(richEditorDocument(text));
 }
@@ -343,26 +312,13 @@ export function RichList({ text }: { text: string }) {
   );
 }
 
-export function RichParagraphs({ text }: { text: string }) {
-  const document = readDocument(text);
-  if (document)
-    return (
-      <>
-        {document.content?.map((paragraph, index) => (
-          <p key={index}>{renderDocumentNodes(paragraph.content ?? [])}</p>
-        ))}
-      </>
-    );
-  return (
-    <>
-      {text
-        .split(/\n\s*\n/)
-        .filter(Boolean)
-        .map((paragraph, index) => (
-          <p key={index}>
-            <RichInline text={paragraph} />
-          </p>
-        ))}
-    </>
-  );
+export function RichParagraphs({text}:{text:string}) {return <RichInline text={text}/>;}
+
+// Array-backed layouts retain each item's formatting instead of splitting serialized JSON.
+export function richEditorLines(text:string):string[]{
+ const doc=richEditorDocument(text,true);
+ return (doc.content??[]).map(node=>richEditorValue({type:'doc',content:[node]}));
+}
+export function richLinesValue(lines:string[]):string{
+ return richEditorValue({type:'doc',content:lines.flatMap(line=>richEditorDocument(line,true).content??[])});
 }

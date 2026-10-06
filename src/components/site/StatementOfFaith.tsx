@@ -1,4 +1,6 @@
 "use client";
+import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
+
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
@@ -38,11 +40,11 @@ export function StatementOfFaith({
 
   return (
     <div className="space-y-6">
-      <p className="max-w-5xl text-lg leading-8 text-muted">{intro}</p>
+      <p className="max-w-5xl text-lg leading-8 text-muted"><RichInline text={intro}/></p>
       <div className="grid items-start gap-4 md:grid-cols-2">
         {statements.map((belief) => {
           const isOpen = openTitles.has(belief.title);
-          const statementId = `belief-${belief.title
+          const statementId = `belief-${richPlainText(belief.title)
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, "-")}`;
 
@@ -60,10 +62,10 @@ export function StatementOfFaith({
               >
                 <span className="flex-1">
                   <span className="block text-sm font-bold uppercase tracking-[0.16em] text-terracotta">
-                    {belief.title}
+                    <RichInline text={belief.title}/>
                   </span>
                   <span className="mt-3 block text-lg leading-8 text-muted">
-                    {belief.preview}
+                    <RichInline text={belief.preview}/>
                   </span>
                 </span>
                 <span className="mt-1 flex size-9 shrink-0 items-center justify-center rounded-full border border-ink/10 text-ink transition">
@@ -81,7 +83,7 @@ export function StatementOfFaith({
                   className="border-t border-ink/10 px-5 pb-5 pt-4"
                 >
                   <p className="whitespace-pre-line leading-7 text-muted">
-                    {belief.statement}
+                    <RichInline text={belief.statement}/>
                   </p>
                 </div>
               ) : null}

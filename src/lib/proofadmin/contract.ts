@@ -52,7 +52,7 @@ export const appearanceSchema = z.object({
 });
 export const actionSchema = z
   .object({
-    label: z.string().max(100),
+    label: text,
     colors: z.object({ background: color.optional(), text: color.optional() }).optional(),
     kind: z.enum(["url", "screen"]),
     value: z.string().max(2000),
@@ -74,15 +74,15 @@ export const actionSchema = z
   });
 export const cardSchema = z.object({
   id,
-  title: label,
+  title: text,
   description: text,
   image: imageUrl,
   imageAlt: z.string().max(500),
   appearance: appearanceSchema,
   action: actionSchema,
   compactTitle: z.boolean().default(false),
-  subtitle: z.string().max(1000).optional(),
-  details: z.array(z.string().max(1000)).max(20).optional(),
+  subtitle: text.optional(),
+  details: z.array(text).max(20).optional(),
   hidden: z.boolean().optional(),
   video: imageUrl.optional(),
   seriesDates: z.object({start: z.union([z.literal(''),z.iso.date()]), end: z.union([z.literal(''),z.iso.date()])}).strict().optional(),
@@ -107,7 +107,7 @@ export const blockSchema = z.object({
   text: text.default(""),
   image: imageUrl.default(""),
   alt: z.string().max(500).default(""),
-  caption: z.string().max(500).default(""),
+  caption: text.default(""),
   groupId: z.string().max(100).default(""),
   size: z.number().int().min(16).max(240).default(64),
   action: actionSchema.default({
@@ -146,18 +146,18 @@ export const sectionSchema = z.object({
   type: z.enum(sectionTypes),
   anchor: z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/).max(100).optional(),
   details: z.object({
-    names: z.string().max(500).optional(),
+    names: text.optional(),
     quote: text.optional(),
-    serviceTimes: z.union([z.string().max(500), z.array(z.string().max(100)).max(20)]).optional(),
-    location: z.string().max(1000).optional(),
-    marqueeText: z.string().max(2000).optional(),
-    speaker: z.string().max(500).optional(),
+    serviceTimes: z.union([text, z.array(text).max(20)]).optional(),
+    location: text.optional(),
+    marqueeText: text.optional(),
+    speaker: text.optional(),
     panelBackground: color.optional(),
     panelText: color.optional(),
   }).strict().optional(),
   name: label,
   hidden: z.boolean().default(false),
-  eyebrow: z.string().max(300).default(""),
+  eyebrow: text.default(""),
   title: text.default(""),
   body: text.default(""),
   image: imageUrl.default(""),
@@ -165,10 +165,10 @@ export const sectionSchema = z.object({
   appearance: appearanceSchema,
   appearanceCustomized: z.boolean().default(false),
   buttons: z.array(actionSchema).max(3).default([]),
-  facts: z.array(z.string().max(150)).max(8).default([]),
+  facts: z.array(text).max(8).default([]),
   groupId: z.string().max(100).default(""),
   items: z
-    .array(z.object({ title: label, body: text, action: actionSchema, color }))
+    .array(z.object({ title: text, body: text, action: actionSchema, color }))
     .max(8)
     .default([]),
 });
@@ -204,8 +204,8 @@ export const contentSchema = z
       ...common,
       kind: z.literal("screen"),
       backgroundKind: z.enum(["image", "color"]).optional(),
-      title: label,
-      eyebrow: z.string().max(300),
+      title: text,
+      eyebrow: text,
       intro: text,
       appearance: appearanceSchema,
       blocks: z.array(blockSchema).max(40),

@@ -1,3 +1,5 @@
+
+import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 import { cn } from "@/lib/utils";
 
 type SectionProps = {
@@ -24,16 +26,16 @@ export function Section({
           <div className="mb-10 max-w-3xl">
             {eyebrow && (
               <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-terracotta">
-                {eyebrow}
+                <RichInline text={eyebrow}/>
               </p>
             )}
             {title && (
               <h2 className="font-display text-3xl font-bold leading-tight text-ink sm:text-5xl">
-                {title}
+                <RichInline text={title}/>
               </h2>
             )}
             {description && (
-              <p className="mt-4 text-lg leading-8 text-muted">{description}</p>
+              <p className="mt-4 text-lg leading-8 text-muted"><RichInline text={description}/></p>
             )}
           </div>
         )}
