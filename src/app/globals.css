@@ -46,3 +46,8 @@ img {
 .font-display {
   font-family: var(--font-display), Georgia, serif;
 }
+
+/* Background video is decorative; keep content and controls above it. */
+section:has(> .proof-background-video),main:has(> .proof-background-video),.proof-video-surface:has(> .proof-background-video){position:relative;isolation:isolate}
+.proof-background-video ~ :not(.absolute){position:relative;z-index:1}
+.proof-background-video ~ .absolute{display:none}

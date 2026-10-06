@@ -1,4 +1,5 @@
 'use client';
+import {BackgroundVideo} from './background-video';
 import {buttonColors} from './button-colors';
 import {useState} from 'react';
 import Image from 'next/image';
@@ -26,7 +27,7 @@ export function Group({group}:{group:GroupContent}){
  </div>)}</div>;
 }
 function StandardSection({s,groups}:{s:Section;groups:Record<string,GroupContent>}){
- return <section className="py-16 sm:py-24" style={{background:s.appearance.background,color:s.appearance.text}}><div className="mx-auto max-w-6xl px-5">
+ return <section className="py-16 sm:py-24" style={{background:s.appearance.background,color:s.appearance.text}}><BackgroundVideo source={s.appearance.video} poster={s.appearance.image||s.image} overlay={s.appearance.overlay} opacity={s.appearance.opacity}/><div className="mx-auto max-w-6xl px-5">
  {s.eyebrow&&<p className="mb-3 text-sm font-bold uppercase tracking-widest">{s.eyebrow}</p>}
  <div className={['image_left','image_right','visit'].includes(s.type)?'grid items-center gap-8 md:grid-cols-2':''}>
  {s.image&&<div className={`relative mb-8 aspect-video ${s.type==='image_right'?'md:order-2':''}`}><Image src={s.image} alt={s.imageAlt} fill sizes="100vw" className="object-cover" style={{objectPosition:`${s.appearance.focalX}% ${s.appearance.focalY}%`}}/></div>}
@@ -35,7 +36,7 @@ function StandardSection({s,groups}:{s:Section;groups:Record<string,GroupContent
  </div></section>;
 }
 function Screen({content,groups,close}:{content:ScreenContent;groups:Record<string,GroupContent>;close:()=>void}){
- return <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={content.title}><div className="mx-auto max-w-4xl rounded-lg p-8" style={{background:content.appearance.background,color:content.appearance.text}}><button type="button" onClick={close} className="float-right rounded border px-4 py-2">Close</button><p>{content.eyebrow}</p><h1 className="font-display text-4xl">{content.title}</h1><RichParagraphs text={content.intro}/>{content.blocks.map(b=><div key={b.id} id={`proof-item-${b.id}`} data-proof-item={b.id} className="mt-6">{b.type==='card_group'?groups[b.groupId]&&<Group group={groups[b.groupId]}/>:b.type==='image'?b.image&&<Image src={b.image} alt={b.alt} width={1000} height={650}/>:b.type==='button'?<Button style={buttonColors(b.action)} href={href(b.action)}>{b.action.label}</Button>:b.type==='spacer'?<div style={{height:b.size}}/>:<>{b.caption&&<h2 className="font-display text-2xl">{b.caption}</h2>}{b.type==='list'?<ul><RichList text={b.text}/></ul>:<RichParagraphs text={b.text}/>} {(b.showAction || b.type==='callout' || b.type==='feature') && b.action.value && <Button className="mt-5" style={buttonColors(b.action)} href={href(b.action)}>{b.action.label}</Button>}</>}</div>)}</div></div>;
+ return <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={content.title}><div className="proof-video-surface mx-auto max-w-4xl rounded-lg p-8" style={{background:content.appearance.background,color:content.appearance.text}}><BackgroundVideo source={content.appearance.video} poster={content.appearance.image} overlay={content.appearance.overlay} opacity={content.appearance.opacity}/><button type="button" onClick={close} className="float-right rounded border px-4 py-2">Close</button><p>{content.eyebrow}</p><h1 className="font-display text-4xl">{content.title}</h1><RichParagraphs text={content.intro}/>{content.blocks.map(b=><div key={b.id} id={`proof-item-${b.id}`} data-proof-item={b.id} className="mt-6">{b.type==='card_group'?groups[b.groupId]&&<Group group={groups[b.groupId]}/>:b.type==='image'?b.image&&<Image src={b.image} alt={b.alt} width={1000} height={650}/>:b.type==='button'?<Button style={buttonColors(b.action)} href={href(b.action)}>{b.action.label}</Button>:b.type==='spacer'?<div style={{height:b.size}}/>:<>{b.caption&&<h2 className="font-display text-2xl">{b.caption}</h2>}{b.type==='list'?<ul><RichList text={b.text}/></ul>:<RichParagraphs text={b.text}/>} {(b.showAction || b.type==='callout' || b.type==='feature') && b.action.value && <Button className="mt-5" style={buttonColors(b.action)} href={href(b.action)}>{b.action.label}</Button>}</>}</div>)}</div></div>;
 }
 export function Website({documents,content,configuration,frame=true,sermons}:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){
  const [opened,setOpened]=useState<string|null>(null);

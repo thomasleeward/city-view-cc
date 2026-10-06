@@ -34,13 +34,11 @@ export const imageUrl = safeUrl.refine(
   (value) => !value || value.startsWith("/") || value.startsWith("https://"),
   "Choose an image or enter an HTTPS image URL.",
 );
-export const videoUrl = z
-  .string()
-  .max(2000)
-  .refine(
-    (value) => !value || /^\/videos\/[a-zA-Z0-9/_.,-]+\.mp4$/.test(value),
-    "Choose an MP4 from the media library.",
-  );
+export const videoUrl = z.string().max(2000).refine(value => {
+  if (!value) return true;
+  if (!safeUrl.safeParse(value).success || !(value.startsWith('/videos/') || value.startsWith('https://'))) return false;
+  try { return /\.mp4$/i.test(new URL(value, 'https://website.example').pathname); } catch { return false; }
+}, 'Upload an MP4 video, choose a saved video, or enter an HTTPS MP4 URL.');
 export const appearanceSchema = z.object({
   background: color.default("#f5f1e9"),
   text: color.default("#1b1c20"),
