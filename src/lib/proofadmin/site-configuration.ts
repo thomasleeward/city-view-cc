@@ -3,6 +3,7 @@ import {safeUrl,type ContentRecord} from './contract';
 const short=z.string().max(300);
 const social=z.union([z.literal('#'),z.literal(''),z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS social link.')]);
 export const configurationSchema=z.object({
+ brandColors:z.array(z.object({name:z.string().trim().min(1).max(60),color:z.string().regex(/^#[\da-f]{6}$/i,'Use a six-digit hex color.')}).strict()).min(1).max(16).optional(),
  settings:z.object({church_name:short.trim().min(1),email:z.union([z.literal(''),z.email()]),phone:short,services:short,address:short,city_state_zip:short,footer_tagline:z.string().max(1000),instagram:social,youtube:social}).strict(),
  navigation:z.array(z.object({id:z.uuid(),label:z.string().trim().min(1).max(80),action_kind:z.enum(['screen','section','page','url']),action_value:z.string().min(1).max(2000),location:z.enum(['header','footer']),group_label:z.string().max(80),sort_order:z.number().int().min(0),is_visible:z.boolean()}).strict().superRefine((n,c)=>{
   if(n.action_kind==='url'?!safeUrl.safeParse(n.action_value).success:!(/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/).test(n.action_value))c.addIssue({code:'custom',path:['action_value'],message:'Choose a valid destination.'});
