@@ -1,5 +1,5 @@
 // Only mounted by authenticated draft preview shells. Public renderers never call this.
-type Document = {id:string;content:{kind:string;sections?:{id:string;anchor?:string;name:string;hidden?:boolean;layout?:{rows:{id:string;columns:{id:string;elements:{id:string}[]}[]}[]}}[];blocks?:{id:string;caption?:string;type:string}[];cards?:{id:string;title:string}[]}};
+type Document = {id:string;content:{kind:string;sections?:{id:string;anchor?:string;name:string;hidden?:boolean;layout?:{rows:{id:string;columns:{id:string;elements:{id:string}[]}[]}[]}}[];blocks?:{id:string;caption?:string;type:string;grid?:{rows:{id:string;columns:{id:string;elements:{id:string}[]}[]}[]}}[];cards?:{id:string;title:string}[]}};
 function labelText(value:string) {
  if(!value.startsWith('richtext:v1:'))return value;
  try { const text=(node:{text?:string;content?:unknown[]}):string=>node.text??(node.content??[]).map(child=>text(child as {text?:string;content?:unknown[]})).join(' ');return text(JSON.parse(value.slice(12))); } catch {return 'item';}
@@ -38,8 +38,9 @@ export function mountPreviewPencils(current:Document, related:Document[], select
   for(const type of ['text','image','button','video','card_group']){const option=document.createElement('button');option.type='button';const label=type==='card_group'?'Card section':type[0].toUpperCase()+type.slice(1);option.title=label;option.setAttribute('aria-label',`Add ${label.toLowerCase()}`);option.innerHTML=`<svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${iconPaths[type]}</svg>`;Object.assign(option.style,{border:'0',background:'#edf3fa',color:'#174b79',borderRadius:'6px',padding:'6px',cursor:'pointer'});option.addEventListener('click',()=>{insert?.({...request,elementType:type});closeMenu();});menu.append(option);}
   layer.append(menu);menu.querySelector('button')?.focus();
  };
- if(insert&&current.content.kind==='page')for(const section of (current.content.sections??[]).filter(s=>!s.hidden)){
-  if((current.content.sections?.length??0)<40)plus(`Add section after ${labelText(section.name)}`,()=>targetFor(section.id,section.anchor)?.getBoundingClientRect(),()=>insert({kind:'section',afterId:section.id}));
+ const sections=current.content.kind==='screen'?(current.content.blocks??[]).map(b=>({id:b.id,name:b.caption||'Section',layout:b.grid,hidden:false,anchor:undefined})):current.content.sections??[];
+ if(insert&&['page','screen'].includes(current.content.kind))for(const section of sections.filter(s=>!s.hidden)){
+  if(sections.length<40)plus(`Add section after ${labelText(section.name)}`,()=>targetFor(section.id,section.anchor)?.getBoundingClientRect(),()=>insert({kind:'section',afterId:section.id}));
   for(const row of section.layout?.rows??[])for(const column of row.columns){
    if(column.elements.length>=20)continue;
    if(!column.elements.length)plus('Add element to empty column',()=>targetFor(section.id,section.anchor)?.querySelector<HTMLElement>(`[data-proof-column="${CSS.escape(column.id)}"]`)?.getBoundingClientRect(),button=>showElements(button,{kind:'element',sectionId:section.id,rowId:row.id,columnId:column.id,afterId:null}),true);

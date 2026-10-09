@@ -87,35 +87,6 @@ export const cardSchema = z.object({
   video: imageUrl.optional(),
   seriesDates: z.object({start: z.union([z.literal(''),z.iso.date()]), end: z.union([z.literal(''),z.iso.date()])}).strict().optional(),
 });
-export const blockSchema = z.object({
-  id,
-  showAction: z.boolean().optional(),
-  type: z.enum([
-    "text",
-    "heading",
-    "list",
-    "callout",
-    "feature",
-    "image",
-    "button",
-    "card_group",
-    "spacer",
-  ]),
-  layout: z
-    .enum(["plain", "lead", "card", "image-left", "image-right"])
-    .default("plain"),
-  text: text.default(""),
-  image: imageUrl.default(""),
-  alt: z.string().max(500).default(""),
-  caption: text.default(""),
-  groupId: z.string().max(100).default(""),
-  size: z.number().int().min(16).max(240).default(64),
-  action: actionSchema.default({
-    label: "Learn more",
-    kind: "url",
-    value: "/",
-  }),
-});
 export const sectionTypes = [
   "hero",
   "intro",
@@ -158,6 +129,38 @@ export const layoutSchema = z.object({
 });
 export type SectionLayout = z.infer<typeof layoutSchema>;
 export type LayoutElement = z.infer<typeof layoutElementSchema>;
+
+export const blockSchema = z.object({
+  id,
+  grid: layoutSchema.optional(),
+  showAction: z.boolean().optional(),
+  type: z.enum([
+    "layout",
+    "text",
+    "heading",
+    "list",
+    "callout",
+    "feature",
+    "image",
+    "button",
+    "card_group",
+    "spacer",
+  ]),
+  layout: z
+    .enum(["plain", "lead", "card", "image-left", "image-right"])
+    .default("plain"),
+  text: text.default(""),
+  image: imageUrl.default(""),
+  alt: z.string().max(500).default(""),
+  caption: text.default(""),
+  groupId: z.string().max(100).default(""),
+  size: z.number().int().min(16).max(240).default(64),
+  action: actionSchema.default({
+    label: "Learn more",
+    kind: "url",
+    value: "/",
+  }),
+}).superRefine((block,ctx)=>{if(block.type==='layout'&&!block.grid)ctx.addIssue({code:'custom',message:'A layout section needs rows and columns.'});if(block.grid&&block.type!=='layout')ctx.addIssue({code:'custom',message:'Rows and columns require a layout section.'});});
 
 export const sectionSchema = z.object({
   layout: layoutSchema.optional(),
@@ -356,6 +359,7 @@ export function references(
     content.cards.forEach((card) => action(card.action));
   if (content.kind === "screen")
     content.blocks.forEach((block) => {
+      block.grid?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
       if (block.type === "card_group")
         result.push({ id: block.groupId, kind: "card_group" });
       if (block.type === "button" || block.showAction || ["feature", "callout"].includes(block.type)) action(block.action);
