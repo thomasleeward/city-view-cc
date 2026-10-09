@@ -145,7 +145,7 @@ export const layoutElementSchema = z.discriminatedUnion("type", [
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
   z.object({id, type:z.literal("text"), text}).strict(),
   z.object({id, type:z.literal("image"), image:imageUrl, alt:z.string().max(500), fill:z.boolean().default(false), focalX:z.number().min(0).max(100).default(50), focalY:z.number().min(0).max(100).default(50)}).strict(),
-  z.object({id, type:z.literal("button"), action:actionSchema}).strict(),
+  z.object({id, type:z.literal("button"), alignment:z.enum(["left","center","right"]).optional(), action:actionSchema}).strict(),
 ]);
 export const layoutSchema = z.object({
   rows:z.array(z.object({id, columns:z.array(z.object({id, elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
