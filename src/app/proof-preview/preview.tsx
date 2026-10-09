@@ -12,6 +12,9 @@ export default function Preview({siteId,id,configuration,sermons}:{siteId:string
  useEffect(()=>{if(!payload)return;return mountPreviewPencils({id,content:payload.content},payload.related??[],(selected,documentId)=>{
   const origins=['https://login.proofcreatives.com','https://proofadmin-kappa.vercel.app',...(process.env.NODE_ENV==='development'?['http://127.0.0.1:3100']:[])];
   for(const origin of origins)window.parent.postMessage({type:'proofadmin-preview-select',protocol:1,siteId,id,selected,documentId},origin);
+ },request=>{
+  const origins=['https://login.proofcreatives.com','https://proofadmin-kappa.vercel.app',...(process.env.NODE_ENV==='development'?['http://127.0.0.1:3100']:[])];
+  for(const origin of origins)window.parent.postMessage({type:'proofadmin-preview-insert',protocol:1,siteId,id,request},origin);
  });},[payload,id,siteId]);
  if(!payload)return <main className="p-10">Open this preview from Proof Admin.</main>;
  return <div onClickCapture={event=>{const target=event.target as HTMLElement;const item=target.closest<HTMLElement>('[data-proof-item]');if(item?.dataset.proofItem)select.current?.(item.dataset.proofItem);if(target.closest('a'))event.preventDefault();}}><style>{'[data-proof-selected="true"]{outline:3px solid #EFAF65;outline-offset:-3px}'}</style><Website sermons={sermons} documents={[{id,content:payload.content},...(payload.related??[])]} content={payload.content} configuration={payload.configuration??configuration}/></div>;

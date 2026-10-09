@@ -141,6 +141,8 @@ export const nativeSectionSchema = z.object({
   groups: z.array(z.object({key:id,label,id}).strict()).max(10),
 }).strict();
 export const layoutElementSchema = z.discriminatedUnion("type", [
+  z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
+  z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
   z.object({id, type:z.literal("text"), text}).strict(),
   z.object({id, type:z.literal("image"), image:imageUrl, alt:z.string().max(500), fill:z.boolean().default(false), focalX:z.number().min(0).max(100).default(50), focalY:z.number().min(0).max(100).default(50)}).strict(),
   z.object({id, type:z.literal("button"), action:actionSchema}).strict(),
@@ -363,7 +365,7 @@ export function references(
       section.native?.groups.forEach(group => result.push({id:group.id,kind:"card_group"}));
       if (section.type === "card_group")
         result.push({ id: section.groupId, kind: "card_group" });
-      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);})));
+      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
       section.buttons.forEach(action);
       section.items.forEach((item) => action(item.action));
     });
