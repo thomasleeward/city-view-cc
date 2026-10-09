@@ -140,7 +140,25 @@ export const nativeSectionSchema = z.object({
   })).max(60),
   groups: z.array(z.object({key:id,label,id}).strict()).max(10),
 }).strict();
+export const layoutElementSchema = z.discriminatedUnion("type", [
+  z.object({id, type:z.literal("text"), text}).strict(),
+  z.object({id, type:z.literal("image"), image:imageUrl, alt:z.string().max(500), fill:z.boolean().default(false), focalX:z.number().min(0).max(100).default(50), focalY:z.number().min(0).max(100).default(50)}).strict(),
+  z.object({id, type:z.literal("button"), action:actionSchema}).strict(),
+]);
+export const layoutSchema = z.object({
+  rows:z.array(z.object({id, columns:z.array(z.object({id, elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
+  gap:z.number().int().min(0).max(80).default(24),
+  padding:z.number().int().min(0).max(160).default(48),
+  fullWidth:z.boolean().default(false),
+}).strict().superRefine((layout,ctx)=>{
+  const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.map(element=>element.id)])]);
+  if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns and elements must have unique IDs."});
+});
+export type SectionLayout = z.infer<typeof layoutSchema>;
+export type LayoutElement = z.infer<typeof layoutElementSchema>;
+
 export const sectionSchema = z.object({
+  layout: layoutSchema.optional(),
   native: nativeSectionSchema.optional(),
   id,
   type: z.enum(sectionTypes),
@@ -345,6 +363,7 @@ export function references(
       section.native?.groups.forEach(group => result.push({id:group.id,kind:"card_group"}));
       if (section.type === "card_group")
         result.push({ id: section.groupId, kind: "card_group" });
+      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);})));
       section.buttons.forEach(action);
       section.items.forEach((item) => action(item.action));
     });

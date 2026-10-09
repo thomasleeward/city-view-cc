@@ -1,4 +1,5 @@
 'use client';
+import {SectionLayoutView} from './section-layout';
 import {BackgroundVideo} from './background-video';
 import {buttonColors} from './button-colors';
 import {useState} from 'react';
@@ -44,7 +45,7 @@ export function Website({documents,content,configuration,frame=true,sermons}:{do
  const screen=documents.find(d=>d.id===opened)?.content;
  return <div onClickCapture={e=>{const link=(e.target as HTMLElement).closest('a');const target=link?.getAttribute('href');if(target?.startsWith('#proof-screen-')){e.preventDefault();setOpened(target.slice('#proof-screen-'.length));}}}>
  {frame&&<Header configuration={configuration}/>}
- <main>{content.kind==='page'?content.sections.filter(s=>!s.hidden).map(s=><div key={s.id} id={s.anchor??s.id} data-proof-item={s.id}>{s.native?<NativeSection s={s} groups={groups} configuration={configuration}/>:<StandardSection s={s} groups={groups}/>}</div>):content.kind==='card_group'?<SiteSection><Group group={content}/></SiteSection>:<Screen content={content} groups={groups} close={()=>setOpened(null)}/>}</main>
+ <main>{content.kind==='page'?content.sections.filter(s=>!s.hidden).map(s=><div key={s.id} id={s.anchor??s.id} data-proof-item={s.id}>{s.layout?<SectionLayoutView layout={s.layout} background={s.appearance.background} color={s.appearance.text} href={href}/>:s.native?<NativeSection s={s} groups={groups} configuration={configuration}/>:<StandardSection s={s} groups={groups}/>}</div>):content.kind==='card_group'?<SiteSection><Group group={content}/></SiteSection>:<Screen content={content} groups={groups} close={()=>setOpened(null)}/>}</main>
  {frame&&<Footer configuration={configuration}/>}
  {screen?.kind==='screen'&&<Screen content={screen} groups={groups} close={()=>setOpened(null)}/>}
  </div>;
