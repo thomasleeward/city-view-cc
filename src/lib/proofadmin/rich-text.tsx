@@ -1,3 +1,4 @@
+import {isGoogleFont,fontStack,googleFontUrl} from './typography';
 import { isValidElement, type ReactNode } from "react";
 import { safeUrl } from "@/lib/proofadmin/contract";
 
@@ -140,12 +141,14 @@ function cleanNode(node: RichDocumentNode, depth = 0): RichDocumentNode | null {
           richTextSizes.some((size) => `${size}px` === mark.attrs?.fontSize)
             ? mark.attrs.fontSize
             : undefined;
-        if (color || fontSize)
+        const fontFamily=isGoogleFont(mark.attrs?.fontFamily)?mark.attrs.fontFamily:undefined;
+        if (color || fontSize || fontFamily)
           marks.push({
             type: "textStyle",
             attrs: {
               ...(color ? { color } : {}),
               ...(fontSize ? { fontSize } : {}),
+              ...(fontFamily ? {fontFamily} : {}),
             },
           });
       }
@@ -190,7 +193,7 @@ function renderDocumentNodes(nodes: RichDocumentNode[], links = true): ReactNode
    if(mark.type==='underline')result=<u>{result}</u>;
    if(mark.type==='strike')result=<s>{result}</s>;
    if(mark.type==='link'&&links)result=<a href={String(mark.attrs?.href)} rel="noopener noreferrer" style={{textDecoration:'underline'}}>{result}</a>;
-   if(mark.type==='textStyle')result=<span style={{color:mark.attrs?.color as string|undefined,fontSize:mark.attrs?.fontSize as string|undefined}}>{result}</span>;
+   if(mark.type==='textStyle')result=<>{googleFontUrl(mark.attrs?.fontFamily)&&<link rel="stylesheet" href={googleFontUrl(mark.attrs?.fontFamily)} precedence="google-fonts"/>}<span style={{color:mark.attrs?.color as string|undefined,fontSize:mark.attrs?.fontSize as string|undefined,fontFamily:fontStack(mark.attrs?.fontFamily)}}>{result}</span></>;
   }
   return <span key={index} style={{whiteSpace:'pre-wrap'}}>{result}</span>;
  });
