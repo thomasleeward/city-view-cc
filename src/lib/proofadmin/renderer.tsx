@@ -1,4 +1,5 @@
 'use client';
+import {LinkPageView} from './link-page';
 import {SectionLayoutView} from './section-layout';
 import {BackgroundVideo} from './background-video';
 import {buttonColors} from './button-colors';
@@ -43,6 +44,7 @@ export function Website({documents,content,configuration,frame=true,sermons}:{do
  const [opened,setOpened]=useState<string|null>(null);
  const groups=Object.fromEntries(documents.flatMap(d=>d.content.kind==='card_group'?[[d.id,sermons&&d.content.presentation==='series'?withSermons(d.content,sermons):d.content]]:[])) as Record<string,GroupContent>;
  const screen=documents.find(d=>d.id===opened)?.content;
+ if(content.kind==='page'&&content.linkPage)return <LinkPageView page={content} groups={groups} logo="/cityviewlogo.png" name={configuration.settings.church_name} href={href}/>;
  return <div onClickCapture={e=>{const link=(e.target as HTMLElement).closest('a');const target=link?.getAttribute('href');if(target?.startsWith('#proof-screen-')){e.preventDefault();setOpened(target.slice('#proof-screen-'.length));}}}>
  {frame&&<Header configuration={configuration}/>}
  <main>{content.kind==='page'?content.sections.filter(s=>!s.hidden).map(s=><div key={s.id} id={s.anchor??s.id} data-proof-item={s.id}>{s.layout?<SectionLayoutView groups={groups} layout={s.layout} background={s.appearance.background} color={s.appearance.text} href={href}/>:s.native?<NativeSection s={s} groups={groups} configuration={configuration}/>:<StandardSection s={s} groups={groups}/>}</div>):content.kind==='card_group'?<SiteSection><Group group={content}/></SiteSection>:<Screen content={content} groups={groups} close={()=>setOpened(null)}/>}</main>
