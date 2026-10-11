@@ -219,6 +219,7 @@ export const contentSchema = z
     z.object({
       ...common,
       kind: z.literal("page"),
+      linkPage: z.object({logo: imageUrl.default(""),logoAlt:z.string().max(200).default("")}).optional(),
       description: z.string().max(2000).optional(),
       group: pageGroupSchema.shape.slug.optional(),
       sections: z.array(sectionSchema).min(1).max(40),
@@ -255,6 +256,7 @@ export const contentSchema = z
         message: "Items must have unique identifiers.",
       });
     if (content.kind === "page") {
+      if(content.linkPage&&(content.group||content.slug==="home"||content.sections.length!==1||content.sections[0].hidden||!content.sections[0].layout||content.sections[0].layout.rows.length!==1||content.sections[0].layout.rows[0].columns.length!==1))ctx.addIssue({code:"custom",message:"Invalid Link Page layout."});
       const anchors = content.sections.map(s => s.anchor ?? s.id);
       if (new Set(anchors).size !== anchors.length) ctx.addIssue({ code: "custom", message: "Section links must be unique within a page." });
       if (
