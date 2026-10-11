@@ -1,0 +1,2 @@
+import {googleFontUrl,typographyCss,type Typography} from './typography';
+export function TypographyStyles({typography}:{typography?:Typography}){return <>{[typography?.heading,typography?.body].filter((font,index,fonts)=>font&&fonts.indexOf(font)===index).map(font=>googleFontUrl(font)?<link key={font} rel="stylesheet" href={googleFontUrl(font)} precedence="google-fonts"/>:null)}<style>{typographyCss(typography)}</style></>;}
