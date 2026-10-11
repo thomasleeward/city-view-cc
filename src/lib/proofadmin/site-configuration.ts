@@ -5,6 +5,7 @@ import {safeUrl,type ContentRecord} from './contract';
 const short=z.string().max(300);
 const social=z.union([z.literal('#'),z.literal(''),z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS social link.')]);
 export const configurationSchema=z.object({
+ blog:z.object({enabled:z.boolean(),featureLatest:z.boolean()}).strict().optional(),
  typography:z.object({heading:z.union([z.enum(googleFonts),z.literal('')]).optional(),body:z.union([z.enum(googleFonts),z.literal('')]).optional()}).strict().optional(),
  announcements:announcementsSchema.optional(),
  brandColors:z.array(z.object({name:z.string().trim().min(1).max(60),color:z.string().regex(/^#[\da-f]{6}$/i,'Use a six-digit hex color.')}).strict()).min(1).max(16).optional(),

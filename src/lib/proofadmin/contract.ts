@@ -219,6 +219,7 @@ export const contentSchema = z
     z.object({
       ...common,
       kind: z.literal("page"),
+      blogPost: z.object({author:z.string().trim().max(160),categories:z.array(z.string().trim().min(1).max(80)).max(12),date:z.iso.date(),excerpt:z.string().max(600),image:imageUrl, imageAlt:z.string().max(300),body:text}).strict().optional(),
       linkPage: z.object({logo: imageUrl.default(""),logoAlt:z.string().max(200).default("")}).optional(),
       description: z.string().max(2000).optional(),
       group: pageGroupSchema.shape.slug.optional(),
@@ -301,7 +302,7 @@ export type ScreenContent = Extract<Content, { kind: "screen" }>;
 export type GroupContent = Extract<Content, { kind: "card_group" }>;
 export type PageContent = Extract<Content, { kind: "page" }>;
 export function pageKey(page: Pick<PageContent, "group" | "slug">): string {
-  return page.group ? `${page.group}/${page.slug}` : page.slug;
+  return "blogPost" in page && page.blogPost ? `blog/${page.slug}` : page.group ? `${page.group}/${page.slug}` : page.slug;
 }
 export function pagePath(page: Pick<PageContent, "group" | "slug">): string {
   return page.group || page.slug !== "home" ? `/${pageKey(page)}` : "/";
