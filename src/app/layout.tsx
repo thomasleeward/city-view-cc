@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
@@ -12,7 +13,7 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
+const defaultMetadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://cityviewcc.com",
   ),
@@ -49,3 +50,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata(undefined,defaultMetadata);}

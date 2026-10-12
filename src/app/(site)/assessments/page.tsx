@@ -1,7 +1,8 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import type { Metadata } from "next";
 import { AssessmentExperience } from "./AssessmentExperience";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
   title: "Assessments | City View Community Church",
   description: "Take the City View DISC and spiritual gifts assessments.",
 };
@@ -15,3 +16,5 @@ export default function AssessmentsPage() {
   );
 }
 
+
+export async function generateMetadata(){return sharingMetadata('/assessments',pageMetadata);}

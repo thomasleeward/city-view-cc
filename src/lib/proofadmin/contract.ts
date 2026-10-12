@@ -214,11 +214,13 @@ export const pageGroupSchema = z.object({
   ),
 });
 export type PageGroup = z.infer<typeof pageGroupSchema>;
+export const sharingSchema = z.object({title:z.string().max(160).optional(),description:z.string().max(500).optional(),image:imageUrl.optional(),imageAlt:z.string().max(300).optional()}).strict();
 export const contentSchema = z
   .discriminatedUnion("kind", [
     z.object({
       ...common,
       kind: z.literal("page"),
+      sharing: sharingSchema.optional(),
       blogPost: z.object({author:z.string().trim().max(160),categories:z.array(z.string().trim().min(1).max(80)).max(12),date:z.iso.date(),excerpt:z.string().max(600),image:imageUrl, imageAlt:z.string().max(300),body:text}).strict().optional(),
       linkPage: z.object({logo: imageUrl.default(""),logoAlt:z.string().max(200).default("")}).optional(),
       description: z.string().max(2000).optional(),

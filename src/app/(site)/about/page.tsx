@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import {proofAdminEnabled} from '@/lib/proofadmin/server';
 import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
@@ -12,7 +13,7 @@ import {
   teamMembers,
 } from "@/lib/content/site";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
   title: "About Us",
   description: "Learn the story, vision, values, team, and beliefs of City View.",
 };
@@ -125,3 +126,5 @@ export default async function AboutPage() {
     </>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata('/about',pageMetadata);}

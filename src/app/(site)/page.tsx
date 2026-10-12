@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import {proofAdminEnabled} from '@/lib/proofadmin/server';
 import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
@@ -159,3 +160,5 @@ export default async function Home() {
     </>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata('/');}
