@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import {proofAdminEnabled} from '@/lib/proofadmin/server';
 import {SharedPage} from '@/lib/proofadmin/page';
 import Image from "next/image";
@@ -8,7 +9,7 @@ import { Section } from "@/components/site/Section";
 import { StatementOfFaith } from "@/components/site/StatementOfFaith";
 import { siteConfig } from "@/lib/config";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
   title: "Get Connected",
   description: "Discover purpose, live on mission, and take spiritual next steps at City View.",
 };
@@ -240,3 +241,5 @@ export default async function GetConnectedPage() {
     </>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata('/get-connected',pageMetadata);}

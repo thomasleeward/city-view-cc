@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { PageHero } from "@/components/site/PageHero";
@@ -30,3 +31,5 @@ export default function EventsPage() {
     </>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata('/events');}

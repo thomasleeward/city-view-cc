@@ -1,3 +1,4 @@
+import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import {proofAdminEnabled} from '@/lib/proofadmin/server';
 import {SharedPage} from '@/lib/proofadmin/page';
 import type { Metadata } from "next";
@@ -7,7 +8,7 @@ import { SermonSeriesCard } from "@/components/site/SermonSeriesCard";
 import { YouTubePlaylistEmbed } from "@/components/site/YouTubePlaylistEmbed";
 import { getSermonSeries } from "@/lib/supabase/queries";
 
-export const metadata: Metadata = {
+const pageMetadata: Metadata = {
   title: "Sermon Archive",
   description: "Browse current and past sermon series from City View.",
 };
@@ -52,3 +53,5 @@ export default async function SermonArchivePage() {
     </>
   );
 }
+
+export async function generateMetadata(){return sharingMetadata('/sermon-archive',pageMetadata);}
