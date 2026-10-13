@@ -11,7 +11,7 @@ type PreviewDocument = {
 };
 export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: string; elementId?: string };
 export type PreviewBounds = { x: number; y: number; width: number; height: number };
-type Focus = (target: PreviewTarget | null, bounds: PreviewBounds | null, action: 'select' | 'position' | 'dismiss') => void;
+type Focus = (target: PreviewTarget | null, bounds: PreviewBounds | null, action: 'select' | 'position' | 'dismiss' | 'insert-menu') => void;
 const rememberedSelection = new Map<string, PreviewTarget>();
 function labelText(value: string) {
   if (!value.startsWith('richtext:v1:')) return value;
@@ -142,6 +142,10 @@ export function mountPreviewPencils(
     layer.append(button); insertControls.push(control);
   };
   const showElements = (button: HTMLButtonElement, request: Record<string, unknown>) => {
+    const menuTarget = validTarget({ sectionId: request.sectionId, rowId: request.rowId, columnId: request.columnId });
+    const menuBounds = menuTarget ? boundsFor(menuTarget) : undefined;
+    // The parent inspector must yield space to this chooser without clearing its selection.
+    if (menuTarget && menuBounds) focus?.(menuTarget, asBounds(menuBounds), 'insert-menu');
     const insertion = activeInsertion;
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
@@ -154,9 +158,9 @@ export function mountPreviewPencils(
       option.addEventListener('click', () => { insert?.({ ...request, elementType: type }); closeMenu(); }); menu.append(option);
     }
     layer.append(menu);
-    const buttonBounds = button.getBoundingClientRect(); const menuBounds = menu.getBoundingClientRect();
-    menu.style.left = `${Math.max(8, Math.min(innerWidth - menuBounds.width - 8, buttonBounds.x))}px`;
-    menu.style.top = `${Math.max(8, Math.min(innerHeight - menuBounds.height - 8, buttonBounds.bottom + 6))}px`;
+    const buttonBounds = button.getBoundingClientRect(); const chooserBounds = menu.getBoundingClientRect();
+    menu.style.left = `${Math.max(8, Math.min(innerWidth - chooserBounds.width - 8, buttonBounds.x))}px`;
+    menu.style.top = `${Math.max(8, Math.min(innerHeight - chooserBounds.height - 8, buttonBounds.bottom + 6))}px`;
     menu.querySelector('button')?.focus(); schedule();
   };
   const pageBounds = () => (document.querySelector<HTMLElement>('main') ?? document.body).getBoundingClientRect();
