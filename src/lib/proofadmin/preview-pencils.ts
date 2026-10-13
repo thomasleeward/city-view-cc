@@ -1,12 +1,12 @@
 // Only mounted by authenticated draft preview shells. Public renderers never call this.
-type Layout = { rows: { id: string; columns: { id: string; elements: { id: string }[] }[] }[] };
+type Layout = { rows: { id: string; columns: { id: string; elements: { id: string; type?: string; text?: string; action?: {label: string} }[] }[] }[] };
 type PreviewDocument = {
   id: string;
   content: {
     kind: string;
-    sections?: { id: string; anchor?: string; name: string; hidden?: boolean; layout?: Layout }[];
-    blocks?: { id: string; caption?: string; type: string; grid?: Layout }[];
-    cards?: { id: string; title: string }[];
+    sections?: { id: string; anchor?: string; name: string; hidden?: boolean; title?:string;body?:string;eyebrow?:string;buttons?:{label:string}[]; layout?: Layout }[];
+    blocks?: { id: string; caption?: string; type: string; text?:string;action?:{label:string}; grid?: Layout }[];
+    cards?: { id: string; title: string; description?:string;action?:{label:string};hidden?:boolean }[];
   };
 };
 export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: string; elementId?: string };
@@ -16,7 +16,7 @@ const rememberedSelection = new Map<string, PreviewTarget>();
 function labelText(value: string) {
   if (!value.startsWith('richtext:v1:')) return value;
   try {
-    const text = (node: { text?: string; content?: unknown[] }): string => node.text ?? (node.content ?? []).map(child => text(child as { text?: string; content?: unknown[] })).join(' ');
+    const text = (node: { type?:string; text?: string; content?: unknown[] }): string => node.type==='hardBreak'?' ':node.text ?? (node.content ?? []).map(child => text(child as { type?:string; text?: string; content?: unknown[] })).join(node.type==='doc'?' ':'');
     return text(JSON.parse(value.slice(12)));
   } catch { return 'item'; }
 }
@@ -32,7 +32,7 @@ export function mountPreviewPencils(
 ) {
   const sections = current.content.kind === 'screen'
     ? (current.content.blocks ?? []).map(block => ({ id: block.id, name: block.caption || 'Section', layout: block.grid, hidden: false, anchor: undefined }))
-    : current.content.sections ?? [];
+    : current.content.kind === 'card_group' ? (current.content.cards??[]).map(card=>({...card,name:card.title,hidden:card.hidden??false,layout:undefined,anchor:undefined})) : current.content.sections ?? [];
   const targetFor = (id: string, anchor?: string) => document.querySelector<HTMLElement>(`[data-proof-section="${CSS.escape(id)}"],[data-proof-item="${CSS.escape(id)}"]`) || document.getElementById(anchor ?? id) || document.getElementById(`proof-item-${id}`);
   const validTarget = (input: unknown): PreviewTarget | null => {
     if (!input || typeof input !== 'object') return null;
@@ -111,6 +111,46 @@ export function mountPreviewPencils(
       anchor: 'anchor' in item ? item.anchor : undefined,
     }));
   });
+  type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number};
+  type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
+  let inline:InlineController|null=null,disposed=false,inlineEnabled=false;
+  const descriptors:InlineDescriptor[]=[];
+  const plain=(value:string)=>labelText(value).replace(/\s+/g,' ').trim();
+  const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number)=>{
+    if(!root||value===undefined)return;
+    const matches=Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(node=>plain(node.textContent??'')===plain(value));
+    const leaves=matches.filter(candidate=>!matches.some(other=>candidate!==other&&candidate.contains(other)));
+    const node=leaves.length===1?leaves[0]:undefined;
+    if(node&&!descriptors.some(d=>d.node===node))descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});
+  };
+  for(const section of sections){
+    const target={sectionId:section.id},root=targetFor(section.id,section.anchor);
+    if(section.layout){for(const row of section.layout.rows)for(const column of row.columns)for(const element of column.elements){
+      const path={...target,rowId:row.id,columnId:column.id,elementId:element.id};
+      const elementNode=nodeFor(path);
+      if(element.type==='text')addText(elementNode,path,'text',element.text,'.proof-layout-text');
+      if(element.type==='button')addText(elementNode,path,'label',element.action?.label,'a,button');
+    }}else if(current.content.kind==='page'){
+      const item=current.content.sections?.find(item=>item.id===section.id);
+      addText(root,target,'title',item?.title,'h1,h2,h3');addText(root,target,'eyebrow',item?.eyebrow,'p,span');addText(root,target,'body',item?.body,'p,div');
+      item?.buttons?.forEach((action,index)=>addText(root,target,'label',action.label,'a,button',index));
+    }else if(current.content.kind==='card_group'){
+      const card=current.content.cards?.find(item=>item.id===section.id);
+      addText(root,target,'title',card?.title,'h1,h2,h3');addText(root,target,'description',card?.description,'p,div');addText(root,target,'label',card?.action?.label,'a,button');
+    }else{
+      const block=current.content.blocks?.find(item=>item.id===section.id);
+      if(block?.type==='button')addText(root,target,'label',block.action?.label,'a,button');
+      else addText(root,target,'text',block?.text,'h1,h2,h3,p,div');
+    }
+  }
+  // This asset is self-hosted; no third-party script or authenticated data is loaded.
+  const inlineUrl='/proof-inline-editor.js';
+  void import(/* webpackIgnore: true */ inlineUrl).then(module=>{
+    if(disposed)return;
+    inline=module.createInlineEditor({layer,onEdit:(edit:unknown)=>{
+      if(siteId&&window.parent!==window)window.parent.postMessage({type:'proofadmin-preview-inline-edit',protocol:1,siteId,id:current.id,edit},parentOrigin);
+    },onSettings:(target:PreviewTarget)=>activateTarget(target)});
+  }).catch(()=>{/* Older client deployments keep the existing inspector available. */});
   const controls = entries.map(item => {
     const button = document.createElement('button');
     button.type = 'button'; button.textContent = '✎';
@@ -209,6 +249,12 @@ export function mountPreviewPencils(
   const pointerLeave = () => { hovered = null; schedule(); };
   const click = (event: MouseEvent) => {
     if (!(event.target instanceof Element) || layer.contains(event.target)) return;
+    if(inline?.contains(event.target)){event.stopPropagation();return;}
+    const descriptor=descriptors.find(item=>item.node.contains(event.target as Node));
+    if(inlineEnabled&&inline&&descriptor){
+      event.preventDefault();event.stopPropagation();closeMenu();setSelected(descriptor.target);inline.start(descriptor,event);return;
+    }
+    inline?.finish();
     closeMenu();
     // Cards retain their separate-document editing flow in both the shared and client previews.
     const card = entries.find(item => {
@@ -228,6 +274,7 @@ export function mountPreviewPencils(
   };
   const escape = (event: KeyboardEvent) => {
     if (event.key !== 'Escape') return;
+    if(inline?.activeNode()){inline.finish();event.preventDefault();return;}
     if (menu) { closeMenu(); return; }
     if (selected) { setSelected(null); focus?.(null, null, 'dismiss'); }
   };
@@ -247,6 +294,7 @@ export function mountPreviewPencils(
       return;
     }
     if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
+    inlineEnabled=event.data.inlineEditing===true;
     if (event.data.target === null) { setSelected(null); closeMenu(); return; }
     const target = validTarget(event.data.target);
     if (target) setSelected(target);
@@ -306,7 +354,7 @@ export function mountPreviewPencils(
   requestSelection();
   schedule();
   return () => {
-    editingStyle.remove(); menu?.remove(); observer.disconnect(); resize.disconnect(); cancelAnimationFrame(frame);
+    disposed=true;inline?.destroy();editingStyle.remove(); menu?.remove(); observer.disconnect(); resize.disconnect(); cancelAnimationFrame(frame);
     window.removeEventListener('scroll', schedule, true); window.removeEventListener('resize', schedule); window.removeEventListener('message', receiveSelection);
     document.removeEventListener('pointermove', pointerMove); document.removeEventListener('pointerleave', pointerLeave); document.removeEventListener('click', click, true); document.removeEventListener('keydown', escape);
     layer.remove();
