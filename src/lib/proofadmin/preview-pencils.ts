@@ -77,7 +77,7 @@ export function mountPreviewPencils(
   Object.assign(layer.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '2147483000' });
   document.body.append(layer);
   const editingStyle = document.createElement('style');
-  editingStyle.textContent = `body{padding-bottom:32px}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-proof-empty-text]{min-height:1.6em;cursor:text}[data-proof-empty-text]:not([data-proof-inline-active])::before{content:'Add your text here';opacity:.65}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
+  editingStyle.textContent = `body{padding-bottom:32px}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-proof-selected="true"],[data-proof-selected="true"][data-proof-item]>*{outline:none!important}[data-proof-empty-text]{min-height:1.6em;cursor:text}[data-proof-empty-text]:not([data-proof-inline-active])::before{content:'Add your text here';opacity:.65}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
   document.head.append(editingStyle);
   let frame = 0;
   let selected = validTarget(rememberedSelection.get(current.id));
@@ -93,6 +93,7 @@ export function mountPreviewPencils(
     return highlight;
   };
   const selectionHighlight = makeHighlight();
+  selectionHighlight.dataset.proofSelectionOutline = 'true';
   const insertionHighlight = makeHighlight(true);
   const setSelected = (target: PreviewTarget | null) => {
     const changed = !equalTarget(selected, target);
@@ -157,6 +158,7 @@ export function mountPreviewPencils(
   void import(/* webpackIgnore: true */ inlineUrl).then(module=>{
     if(disposed)return;
     inline=module.createInlineEditor({layer,onEdit:(edit:unknown)=>{
+      schedule();
       if(siteId&&window.parent!==window)window.parent.postMessage({type:'proofadmin-preview-inline-edit',protocol:1,siteId,id:current.id,edit},parentOrigin);
     },onSettings:(target:PreviewTarget)=>activateTarget(target)});
     loading.style.display='none';if(pendingText){inline!.start(pendingText);pendingText=null;}
@@ -320,15 +322,29 @@ export function mountPreviewPencils(
   };
   const draw = () => {
     frame = 0;
+    const activeText = inline?.activeNode();
     const selectionBounds = selected ? boundsFor(selected) : undefined;
-    placeHighlight(selectionHighlight, selectionBounds);
+    const textNode = activeText ?? (selected?.elementId ? descriptors.find(item => equalTarget(item.target, selected))?.node : undefined);
+    let outlineBounds = textNode?.getBoundingClientRect() ?? selectionBounds;
+    if (textNode && outlineBounds) {
+      // A large inline font can extend above/below its parent's line box. Include
+      // the visible glyph bounds and keep the border outside them without padding the content.
+      let left=outlineBounds.left,top=outlineBounds.top,right=outlineBounds.right,bottom=outlineBounds.bottom;
+      const walker=document.createTreeWalker(textNode,NodeFilter.SHOW_TEXT);
+      while(walker.nextNode()) {
+        const range=document.createRange();range.selectNodeContents(walker.currentNode);
+        for(const rect of Array.from(range.getClientRects()))if(rect.width&&rect.height){left=Math.min(left,rect.left);top=Math.min(top,rect.top);right=Math.max(right,rect.right);bottom=Math.max(bottom,rect.bottom);}
+      }
+      outlineBounds=new DOMRect(left-8,top-8,right-left+16,bottom-top+16);
+    }
+    placeHighlight(selectionHighlight, outlineBounds);
     if (selected && selectionBounds && focus) {
       const next = JSON.stringify([selected, asBounds(selectionBounds)]);
       if (next !== previousPosition) { previousPosition = next; focus(selected, asBounds(selectionBounds), 'position'); }
     }
     for (const control of insertControls) {
       const bounds = control.bounds();
-      const relevant = control.always || matchesContext(control.target, hovered) || matchesContext(control.target, selected) || control === activeInsertion;
+      const relevant = !activeText && (control.always || matchesContext(control.target, hovered) || matchesContext(control.target, selected) || control === activeInsertion);
       let x = 0, y = 0;
       if (bounds) {
         y = control.placement === 'empty' || control.placement === 'column' ? (bounds.top + bounds.bottom) / 2 : bounds.bottom;
@@ -354,7 +370,7 @@ export function mountPreviewPencils(
       const target = targetFor(item.id, item.anchor);
       let bounds = target?.getBoundingClientRect();
       if (target && (!bounds?.width || !bounds.height)) bounds = target.firstElementChild?.getBoundingClientRect();
-      button.style.display = visibleBounds(bounds) ? 'block' : 'none';
+      button.style.display = !activeText && visibleBounds(bounds) ? 'block' : 'none';
       if (bounds) { button.style.top = `${Math.max(6, bounds.top + 10)}px`; button.style.left = `${Math.min(innerWidth - 40, Math.max(4, bounds.right - 44))}px`; }
     }
   };
