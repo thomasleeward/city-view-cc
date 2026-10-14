@@ -126,7 +126,8 @@ export function mountPreviewPencils(
   const plain=(value:string)=>labelText(value).replace(/\s+/g,' ').trim();
   const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number)=>{
     if(!root||value===undefined)return;
-    const matches=Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(node=>plain(node.textContent??'')===plain(value));
+    // Layout fields are identified by their validated element path; rich paragraph DOM does not preserve textContent whitespace.
+    const matches=Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(node=>!!target.elementId||plain(node.textContent??'')===plain(value));
     const leaves=matches.filter(candidate=>!matches.some(other=>candidate!==other&&candidate.contains(other)));
     const node=leaves.length===1?leaves[0]:undefined;
     if(node&&!descriptors.some(d=>d.node===node)){if(field==='text'&&!plain(value))node.dataset.proofEmptyText='true';descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});}
