@@ -13,6 +13,12 @@ export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: stri
 export type PreviewBounds = { x: number; y: number; width: number; height: number };
 type Focus = (target: PreviewTarget | null, bounds: PreviewBounds | null, action: 'select' | 'position' | 'dismiss' | 'insert-menu') => void;
 const rememberedSelection = new Map<string, PreviewTarget>();
+// Referrers are intentionally suppressed by the admin. Trust explicit origins and the source window.
+export function previewAdminOrigins(ownOrigin:string){
+  const origins=[ownOrigin,'https://login.proofcreatives.com','https://proofadmin-kappa.vercel.app'];
+  try{if(['127.0.0.1','localhost'].includes(new URL(ownOrigin).hostname))origins.push('http://127.0.0.1:3100');}catch{/* Invalid origins cannot add a development parent. */}
+  return [...new Set(origins)];
+}
 function labelText(value: string) {
   if (!value.startsWith('richtext:v1:')) return value;
   try {
@@ -71,7 +77,7 @@ export function mountPreviewPencils(
   Object.assign(layer.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '2147483000' });
   document.body.append(layer);
   const editingStyle = document.createElement('style');
-  editingStyle.textContent = `body{padding-bottom:32px}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
+  editingStyle.textContent = `body{padding-bottom:32px}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-proof-empty-text]{min-height:1.6em;cursor:text}[data-proof-empty-text]:not([data-proof-inline-active])::before{content:'Add your text here';opacity:.65}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
   document.head.append(editingStyle);
   let frame = 0;
   let selected = validTarget(rememberedSelection.get(current.id));
@@ -114,6 +120,8 @@ export function mountPreviewPencils(
   type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
   let inline:InlineController|null=null,disposed=false,inlineEnabled=false;
+  let pendingText:InlineDescriptor|null=null;
+  const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
   const descriptors:InlineDescriptor[]=[];
   const plain=(value:string)=>labelText(value).replace(/\s+/g,' ').trim();
   const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number)=>{
@@ -121,7 +129,7 @@ export function mountPreviewPencils(
     const matches=Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(node=>plain(node.textContent??'')===plain(value));
     const leaves=matches.filter(candidate=>!matches.some(other=>candidate!==other&&candidate.contains(other)));
     const node=leaves.length===1?leaves[0]:undefined;
-    if(node&&!descriptors.some(d=>d.node===node))descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});
+    if(node&&!descriptors.some(d=>d.node===node)){if(field==='text'&&!plain(value))node.dataset.proofEmptyText='true';descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});}
   };
   for(const section of sections){
     const target={sectionId:section.id},root=targetFor(section.id,section.anchor);
@@ -150,7 +158,8 @@ export function mountPreviewPencils(
     inline=module.createInlineEditor({layer,onEdit:(edit:unknown)=>{
       if(siteId&&window.parent!==window)window.parent.postMessage({type:'proofadmin-preview-inline-edit',protocol:1,siteId,id:current.id,edit},parentOrigin);
     },onSettings:(target:PreviewTarget)=>activateTarget(target)});
-  }).catch(()=>{/* Older client deployments keep the existing inspector available. */});
+    loading.style.display='none';if(pendingText){inline!.start(pendingText);pendingText=null;}
+  }).catch(()=>{if(disposed)return;loading.textContent='The text editor could not load. Reload this page to try again.';});
   const controls = entries.map(item => {
     const button = document.createElement('button');
     button.type = 'button'; button.textContent = '✎';
@@ -248,11 +257,13 @@ export function mountPreviewPencils(
   };
   const pointerLeave = () => { hovered = null; schedule(); };
   const click = (event: MouseEvent) => {
-    if (!(event.target instanceof Element) || layer.contains(event.target)) return;
+    if (!(event.target instanceof Element))return;
+    if(layer.contains(event.target)){if(!event.target.closest('[data-proof-inline-toolbar]'))inline?.finish();return;}
     if(inline?.contains(event.target)){event.stopPropagation();return;}
     const descriptor=descriptors.find(item=>item.node.contains(event.target as Node));
-    if(inlineEnabled&&inline&&descriptor){
-      event.preventDefault();event.stopPropagation();closeMenu();setSelected(descriptor.target);inline.start(descriptor,event);return;
+    if(inlineEnabled&&descriptor){
+      event.preventDefault();event.stopPropagation();closeMenu();setSelected(descriptor.target);
+      if(inline)inline.start(descriptor,event);else{pendingText=descriptor;const bounds=descriptor.node.getBoundingClientRect();loading.textContent='Loading text editor…';Object.assign(loading.style,{display:'block',left:`${Math.max(8,bounds.left)}px`,top:`${Math.max(8,bounds.top-36)}px`});}return;
     }
     inline?.finish();
     closeMenu();
@@ -278,17 +289,18 @@ export function mountPreviewPencils(
     if (menu) { closeMenu(); return; }
     if (selected) { setSelected(null); focus?.(null, null, 'dismiss'); }
   };
-  let parentOrigin = location.origin;
-  try { if (document.referrer) parentOrigin = new URL(document.referrer).origin; } catch { /* Empty/invalid referrers cannot establish a foreign parent. */ }
+  const trustedOrigins=previewAdminOrigins(location.origin);
+  let parentOrigin=location.origin;
   let siteId = new URL(location.href).searchParams.get('siteId') ?? location.pathname.match(/\/admin\/sites\/([^/]+)\//)?.[1] ?? null;
   let selectionReadySent = false;
   const requestSelection = () => {
     if (selectionReadySent || !siteId || window.parent === window) return;
     selectionReadySent = true;
-    window.parent.postMessage({ type: 'proofadmin-preview-selection-ready', protocol: 1, siteId, id: current.id }, parentOrigin);
+    for(const origin of trustedOrigins)window.parent.postMessage({ type: 'proofadmin-preview-selection-ready', protocol: 1, siteId, id: current.id }, origin);
   };
   const receiveSelection = (event: MessageEvent) => {
-    if (event.source !== window.parent || event.origin !== parentOrigin || event.data?.protocol !== 1 || event.data?.id !== current.id) return;
+    if (event.source !== window.parent || !trustedOrigins.includes(event.origin) || event.data?.protocol !== 1 || event.data?.id !== current.id || (siteId&&event.data?.siteId!==siteId)) return;
+    parentOrigin=event.origin;
     if (event.data.type === 'proofadmin-preview-content') {
       if (typeof event.data.siteId === 'string' && (!siteId || siteId === event.data.siteId)) { siteId = event.data.siteId; requestSelection(); }
       return;
@@ -354,7 +366,7 @@ export function mountPreviewPencils(
   requestSelection();
   schedule();
   return () => {
-    disposed=true;inline?.destroy();editingStyle.remove(); menu?.remove(); observer.disconnect(); resize.disconnect(); cancelAnimationFrame(frame);
+    disposed=true;pendingText=null;inline?.destroy();for(const descriptor of descriptors)descriptor.node.removeAttribute('data-proof-empty-text');editingStyle.remove(); menu?.remove(); observer.disconnect(); resize.disconnect(); cancelAnimationFrame(frame);
     window.removeEventListener('scroll', schedule, true); window.removeEventListener('resize', schedule); window.removeEventListener('message', receiveSelection);
     document.removeEventListener('pointermove', pointerMove); document.removeEventListener('pointerleave', pointerLeave); document.removeEventListener('click', click, true); document.removeEventListener('keydown', escape);
     layer.remove();
