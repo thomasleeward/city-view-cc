@@ -121,6 +121,7 @@ export function mountPreviewPencils(
   type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
   let inline:InlineController|null=null,disposed=false,inlineEnabled=false;
+  let brandColors:unknown=[];
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
   const descriptors:InlineDescriptor[]=[];
@@ -157,7 +158,7 @@ export function mountPreviewPencils(
   const inlineUrl='/proof-inline-editor.js';
   void import(/* webpackIgnore: true */ inlineUrl).then(module=>{
     if(disposed)return;
-    inline=module.createInlineEditor({layer,onEdit:(edit:unknown)=>{
+    inline=module.createInlineEditor({layer,getBrandColors:()=>brandColors,onEdit:(edit:unknown)=>{
       schedule();
       if(siteId&&window.parent!==window)window.parent.postMessage({type:'proofadmin-preview-inline-edit',protocol:1,siteId,id:current.id,edit},parentOrigin);
     },onSettings:(target:PreviewTarget)=>activateTarget(target)});
@@ -310,6 +311,7 @@ export function mountPreviewPencils(
     }
     if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
     inlineEnabled=event.data.inlineEditing===true;
+    brandColors=event.data.brandColors;
     if (event.data.target === null) { setSelected(null); closeMenu(); return; }
     const target = validTarget(event.data.target);
     if (target) setSelected(target);
