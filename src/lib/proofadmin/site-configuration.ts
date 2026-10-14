@@ -1,4 +1,4 @@
-import {sharingSchema} from './contract';
+import {sharingSchema,imageUrl} from './contract';
 import {googleFonts} from './typography';
 import {z} from 'zod';
 import {announcementsSchema,validateAnnouncementPublish} from './announcements-schema';
@@ -6,6 +6,7 @@ import {safeUrl,type ContentRecord} from './contract';
 const short=z.string().max(300);
 const social=z.union([z.literal('#'),z.literal(''),z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS social link.')]);
 export const configurationSchema=z.object({
+ favicon:imageUrl.optional(),
  sharing:sharingSchema.optional(),
  blog:z.object({enabled:z.boolean(),featureLatest:z.boolean()}).strict().optional(),
  typography:z.object({heading:z.union([z.enum(googleFonts),z.literal('')]).optional(),body:z.union([z.enum(googleFonts),z.literal('')]).optional()}).strict().optional(),
