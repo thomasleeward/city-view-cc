@@ -6,6 +6,7 @@ import {safeUrl,type ContentRecord} from './contract';
 const short=z.string().max(300);
 const social=z.union([z.literal('#'),z.literal(''),z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS social link.')]);
 export const configurationSchema=z.object({
+ sermonSource:z.object({channelId:z.string().regex(/^\d{1,20}$/),channelName:z.string().min(1).max(200)}).strict().optional(),
  favicon:imageUrl.optional(),
  sharing:sharingSchema.optional(),
  blog:z.object({enabled:z.boolean(),featureLatest:z.boolean()}).strict().optional(),
