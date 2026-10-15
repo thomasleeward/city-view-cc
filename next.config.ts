@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
+const nextConfig: NextConfig = {async rewrites(){return [{source:'/sermons/message/:id',destination:'https://login.proofcreatives.com/sermon-view/city-view/message/:id'},{source:'/sermons/series/:id',destination:'https://login.proofcreatives.com/sermon-view/city-view/series/:id'}];},
   async headers(){return [{source:'/proof-preview',headers:[{key:'Content-Security-Policy',value:"frame-ancestors https://login.proofcreatives.com https://proofadmin-kappa.vercel.app"},{key:'Cache-Control',value:'private, no-store'},{key:'X-Robots-Tag',value:'noindex, nofollow'}]}];},
   async redirects() {
     // Shared Clean Links own this route after cutover. Keep the legacy deployment intact.

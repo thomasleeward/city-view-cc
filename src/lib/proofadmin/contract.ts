@@ -1,3 +1,4 @@
+import {sermonElementTypes,rowHasSermonElement} from './sermon-elements';
 import { z } from "zod";
 import { isReservedRoutePath } from "./routes";
 
@@ -112,6 +113,7 @@ export const nativeSectionSchema = z.object({
   groups: z.array(z.object({key:id,label,id}).strict()).max(10),
 }).strict();
 export const layoutElementSchema = z.discriminatedUnion("type", [
+ z.object({id,type:z.enum(sermonElementTypes)}).strict(),
   z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
   z.object({id, type:z.literal("text"), text}).strict(),
@@ -124,6 +126,7 @@ export const layoutSchema = z.object({
   padding:z.number().int().min(0).max(160).default(48),
   fullWidth:z.boolean().default(false),
 }).strict().superRefine((layout,ctx)=>{
+ layout.rows.forEach((row,index)=>{if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});});
   const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.map(element=>element.id)])]);
   if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns and elements must have unique IDs."});
 });

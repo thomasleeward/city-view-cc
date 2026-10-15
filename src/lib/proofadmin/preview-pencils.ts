@@ -26,6 +26,16 @@ function labelText(value: string) {
     return text(JSON.parse(value.slice(12)));
   } catch { return 'item'; }
 }
+// Legacy clients render Markdown emphasis and paragraph breaks before the shared editor mounts.
+export function previewPlainText(value:string){
+  return labelText(value).replace(/\[([^\]\n]+)\]\([^)\s]+\)/g,'$1').replace(/\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g,(_match,strong,emphasis)=>strong??emphasis).replace(/\{style(?: size=\d{1,2})?(?: color=#[\da-fA-F]{6})?\}|\{\/style\}/g,'').replace(/\s+/g,' ').trim();
+}
+function renderedText(node:Node):string{
+  if(node.nodeType===Node.TEXT_NODE)return node.textContent??'';
+  if(node instanceof Element&&node.tagName==='BR')return '\n';
+  const text=Array.from(node.childNodes).map(renderedText).join('');
+  return node instanceof Element&&/^(P|DIV|H[1-6]|LI|UL|OL|SECTION)$/.test(node.tagName)?`\n${text}\n`:text;
+}
 function equalTarget(a: PreviewTarget | null, b: PreviewTarget | null) {
   return a?.sectionId === b?.sectionId && a?.rowId === b?.rowId && a?.columnId === b?.columnId && a?.elementId === b?.elementId;
 }
@@ -39,7 +49,7 @@ export function mountPreviewPencils(
   const sections = current.content.kind === 'screen'
     ? (current.content.blocks ?? []).map(block => ({ id: block.id, name: block.caption || 'Section', layout: block.grid, hidden: false, anchor: undefined }))
     : current.content.kind === 'card_group' ? (current.content.cards??[]).map(card=>({...card,name:card.title,hidden:card.hidden??false,layout:undefined,anchor:undefined})) : current.content.sections ?? [];
-  const targetFor = (id: string, anchor?: string) => document.querySelector<HTMLElement>(`[data-proof-section="${CSS.escape(id)}"],[data-proof-item="${CSS.escape(id)}"]`) || document.getElementById(anchor ?? id) || document.getElementById(`proof-item-${id}`);
+  const targetFor = (id: string, anchor?: string) => document.querySelector<HTMLElement>(`[data-proof-section="${CSS.escape(id)}"],[data-proof-item="${CSS.escape(id)}"],[data-content-section="${CSS.escape(id)}"],[data-content-card="${CSS.escape(id)}"]`) || document.getElementById(anchor ?? id) || document.getElementById(`proof-item-${id}`);
   const validTarget = (input: unknown): PreviewTarget | null => {
     if (!input || typeof input !== 'object') return null;
     const value = input as Record<string, unknown>;
@@ -125,11 +135,13 @@ export function mountPreviewPencils(
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
   const descriptors:InlineDescriptor[]=[];
-  const plain=(value:string)=>labelText(value).replace(/\s+/g,' ').trim();
+  const plain=previewPlainText;
   const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number)=>{
     if(!root||value===undefined)return;
     // Layout fields are identified by their validated element path; rich paragraph DOM does not preserve textContent whitespace.
-    const matches=Array.from(root.querySelectorAll<HTMLElement>(selector)).filter(node=>!!target.elementId||plain(node.textContent??'')===plain(value));
+    const explicit=Array.from(root.querySelectorAll<HTMLElement>(`[data-proof-field="${field}"]`));
+    const candidates=[...(root.matches(selector)?[root]:[]),...Array.from(root.querySelectorAll<HTMLElement>(selector))];
+    const matches=explicit.length?explicit:candidates.filter(node=>!!target.elementId||plain(renderedText(node))===plain(value));
     const leaves=matches.filter(candidate=>!matches.some(other=>candidate!==other&&candidate.contains(other)));
     const node=leaves.length===1?leaves[0]:undefined;
     if(node&&!descriptors.some(d=>d.node===node)){if(field==='text'&&!plain(value))node.dataset.proofEmptyText='true';descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});}
@@ -147,11 +159,11 @@ export function mountPreviewPencils(
       item?.buttons?.forEach((action,index)=>addText(root,target,'label',action.label,'a,button',index));
     }else if(current.content.kind==='card_group'){
       const card=current.content.cards?.find(item=>item.id===section.id);
-      addText(root,target,'title',card?.title,'h1,h2,h3');addText(root,target,'description',card?.description,'p,div');addText(root,target,'label',card?.action?.label,'a,button');
+      addText(root,target,'title',card?.title,'h1,h2,h3,.ministry-card-title');addText(root,target,'description',card?.description,'p,div,small');addText(root,target,'label',card?.action?.label,'a,button');
     }else{
       const block=current.content.blocks?.find(item=>item.id===section.id);
       if(block?.type==='button')addText(root,target,'label',block.action?.label,'a,button');
-      else addText(root,target,'text',block?.text,'h1,h2,h3,p,div');
+      else if(block&&['text','heading','callout','list','feature'].includes(block.type))addText(root,target,'text',block.text,'h1,h2,h3,p,div');
     }
   }
   // This asset is self-hosted; no third-party script or authenticated data is loaded.
@@ -203,9 +215,12 @@ export function mountPreviewPencils(
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
     Object.assign(menu.style, { position: 'absolute', pointerEvents: 'auto', display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px', maxWidth: 'calc(100vw - 16px)', borderRadius: '10px', background: '#fff', border: '1px solid #d2ddeb', boxShadow: '0 6px 24px #0003' });
-    for (const type of ['text', 'image', 'button', 'video', 'card_group']) {
+    for (const type of ['text', 'image', 'button', 'video', 'card_group','recent_sermons','recent_series','all_sermons','all_series']) {
       const option = document.createElement('button'); option.type = 'button';
-      const label = type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1);
+      const sermonLabels:Record<string,string>={recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
+      const label = sermonLabels[type]??(type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1));
+      const insertRow=sections.find(section=>section.id===request.sectionId)?.layout?.rows.find(row=>row.id===request.rowId);
+      if(sermonLabels[type]&&insertRow?.columns.length!==1){option.disabled=true;option.title='Sermon elements require a single-column row.';}
       option.textContent = label; option.setAttribute('aria-label', `Add ${type === 'card_group' ? 'card section' : label.toLowerCase()}`);
       Object.assign(option.style, { border: '0', background: '#edf3fa', color: '#174b79', borderRadius: '6px', padding: '9px', font: '600 12px system-ui,sans-serif', cursor: 'pointer' });
       option.addEventListener('click', () => { insert?.({ ...request, elementType: type }); closeMenu(); }); menu.append(option);
@@ -231,7 +246,7 @@ export function mountPreviewPencils(
         if (!row.columns.length) plus('Add column', 'Add first column', () => boundsFor(rowTarget), rowTarget, 'empty', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: null }), true);
         for (const [columnIndex, column] of row.columns.entries()) {
           const columnTarget = { ...rowTarget, columnId: column.id };
-          if (row.columns.length < 6) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
+          if (row.columns.length < 6&&!row.columns.some(column=>column.elements.some(element=>['recent_sermons','recent_series','all_sermons','all_series'].includes(element.type??'')))) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
           if (column.elements.length >= 20) continue;
           const request = { kind: 'element', sectionId: section.id, rowId: row.id, columnId: column.id };
           if (!column.elements.length) plus('Add element', 'Add element to empty column', () => boundsFor(columnTarget), columnTarget, 'empty', button => showElements(button, { ...request, afterId: null }), true);
@@ -264,6 +279,7 @@ export function mountPreviewPencils(
     if (!(event.target instanceof Element))return;
     if(layer.contains(event.target)){if(!event.target.closest('[data-proof-inline-toolbar]'))inline?.finish();return;}
     if(inline?.contains(event.target)){event.stopPropagation();return;}
+    if(event.target.closest('[data-proof-sermon-controls]')){inline?.finish();closeMenu();return;}
     const descriptor=descriptors.find(item=>item.node.contains(event.target as Node));
     if(inlineEnabled&&descriptor){
       event.preventDefault();event.stopPropagation();closeMenu();setSelected(descriptor.target);
