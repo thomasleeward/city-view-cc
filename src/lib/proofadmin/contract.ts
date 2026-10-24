@@ -112,7 +112,9 @@ export const nativeSectionSchema = z.object({
   })).max(60),
   groups: z.array(z.object({key:id,label,id}).strict()).max(10),
 }).strict();
+export const accordionItemSchema = z.object({id,title:z.string().trim().min(1).max(200).refine(value=>!value.startsWith('richtext:v1:'),'Accordion titles must be plain text.'),body:text}).strict();
 export const layoutElementSchema = z.discriminatedUnion("type", [
+  z.object({id,type:z.literal("accordion"),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
  z.object({id,type:z.enum(sermonElementTypes)}).strict(),
   z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
@@ -127,8 +129,8 @@ export const layoutSchema = z.object({
   fullWidth:z.boolean().default(false),
 }).strict().superRefine((layout,ctx)=>{
  layout.rows.forEach((row,index)=>{if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});});
-  const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.map(element=>element.id)])]);
-  if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns and elements must have unique IDs."});
+  const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.flatMap(element=>[element.id,...(element.type==='accordion'?element.items.map(item=>item.id):[])])])]);
+  if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns, elements and accordion items must have unique IDs."});
 });
 export type SectionLayout = z.infer<typeof layoutSchema>;
 export type LayoutElement = z.infer<typeof layoutElementSchema>;

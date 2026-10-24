@@ -130,7 +130,7 @@ export function mountPreviewPencils(
   });
   type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
-  let inline:InlineController|null=null,disposed=false,inlineEnabled=false;
+  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false;
   let brandColors:unknown=[];
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
@@ -215,7 +215,7 @@ export function mountPreviewPencils(
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
     Object.assign(menu.style, { position: 'absolute', pointerEvents: 'auto', display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px', maxWidth: 'calc(100vw - 16px)', borderRadius: '10px', background: '#fff', border: '1px solid #d2ddeb', boxShadow: '0 6px 24px #0003' });
-    for (const type of ['text', 'image', 'button', 'video', 'card_group','recent_sermons','recent_series','all_sermons','all_series']) {
+    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(accordionEnabled?['accordion']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
       const option = document.createElement('button'); option.type = 'button';
       const sermonLabels:Record<string,string>={recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
       const label = sermonLabels[type]??(type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1));
@@ -279,6 +279,7 @@ export function mountPreviewPencils(
     if (!(event.target instanceof Element))return;
     if(layer.contains(event.target)){if(!event.target.closest('[data-proof-inline-toolbar]'))inline?.finish();return;}
     if(inline?.contains(event.target)){event.stopPropagation();return;}
+    if(event.target.closest('[data-proof-accordion-controls]')){event.stopPropagation();inline?.finish();closeMenu();const target=targetAt(event.target);if(target)activateTarget(target);return;}
     if(event.target.closest('[data-proof-sermon-controls]')){inline?.finish();closeMenu();return;}
     const descriptor=descriptors.find(item=>item.node.contains(event.target as Node));
     if(inlineEnabled&&descriptor){
@@ -327,6 +328,7 @@ export function mountPreviewPencils(
     }
     if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
     inlineEnabled=event.data.inlineEditing===true;
+    accordionEnabled=event.data.accordion===true;
     brandColors=event.data.brandColors;
     if (event.data.target === null) { setSelected(null); closeMenu(); return; }
     const target = validTarget(event.data.target);
