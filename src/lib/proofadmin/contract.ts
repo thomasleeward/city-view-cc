@@ -127,6 +127,8 @@ export const layoutSchema = z.object({
   rows:z.array(z.object({id, columns:z.array(z.object({id, elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
   gap:z.number().int().min(0).max(80).default(24),
   padding:z.number().int().min(0).max(160).default(48),
+  paddingX:z.number().int().min(0).max(160).optional(),
+  paddingY:z.number().int().min(0).max(160).optional(),
   fullWidth:z.boolean().default(false),
 }).strict().superRefine((layout,ctx)=>{
  layout.rows.forEach((row,index)=>{if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});});
@@ -137,6 +139,7 @@ export type SectionLayout = z.infer<typeof layoutSchema>;
 export type LayoutElement = z.infer<typeof layoutElementSchema>;
 
 export const blockSchema = z.object({
+  presentation:z.object({paddingX:z.number().int().min(0).max(160).optional(),paddingY:z.number().int().min(0).max(160).optional(),background:color.optional(),text:color.optional()}).strict().optional(),
   id,
   grid: layoutSchema.optional(),
   showAction: z.boolean().optional(),

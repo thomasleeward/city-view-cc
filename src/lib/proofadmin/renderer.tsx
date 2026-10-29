@@ -1,4 +1,7 @@
 'use client';
+import {screenBlockPresentation} from './screen-presentation';
+import './screen-presentation.css';
+import './screen-client.css';
 import {TypographyStyles} from './typography-view';
 import {LinkPageView} from './link-page';
 import {SectionLayoutView} from './section-layout';
@@ -38,8 +41,18 @@ function StandardSection({s,groups}:{s:Section;groups:Record<string,GroupContent
  {s.type==='card_group'&&groups[s.groupId]&&<Group group={groups[s.groupId]}/>}
  </div></section>;
 }
-function Screen({content,groups,close}:{content:ScreenContent;groups:Record<string,GroupContent>;close:()=>void}){
- return <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={richPlainText(content.title)}><div className="proof-video-surface mx-auto max-w-4xl rounded-lg p-8" style={{background:content.appearance.background,color:content.appearance.text}}><BackgroundVideo source={content.appearance.video} poster={content.appearance.image} overlay={content.appearance.overlay} opacity={content.appearance.opacity}/><button type="button" onClick={close} className="float-right rounded border px-4 py-2">Close</button><p><RichInline text={content.eyebrow}/></p><h1 className="font-display text-4xl"><RichInline text={content.title}/></h1><RichParagraphs text={content.intro}/>{content.blocks.map(b=><div key={b.id} id={`proof-item-${b.id}`} data-proof-item={b.id} className="mt-6">{b.grid?<SectionLayoutView layout={b.grid} groups={groups} background={content.appearance.background} color={content.appearance.text} href={href}/>:b.type==='card_group'?groups[b.groupId]&&<Group group={groups[b.groupId]}/>:b.type==='image'?b.image&&<Image src={b.image} alt={b.alt} width={1000} height={650}/>:b.type==='button'?<Button style={buttonColors(b.action)} href={href(b.action)}><RichInline links={false} text={b.action.label}/></Button>:b.type==='spacer'?<div style={{height:b.size}}/>:<>{b.caption&&<h2 className="font-display text-2xl"><RichInline text={b.caption}/></h2>}{b.type==='list'?<ul><RichList text={b.text}/></ul>:<RichParagraphs text={b.text}/>} {(b.showAction || b.type==='callout' || b.type==='feature') && b.action.value && <Button className="mt-5" style={buttonColors(b.action)} href={href(b.action)}><RichInline links={false} text={b.action.label}/></Button>}</>}</div>)}</div></div>;
+export function Screen({content,groups,close}:{content:ScreenContent;groups:Record<string,GroupContent>;close:()=>void}){
+ const header=screenBlockPresentation(undefined,content.appearance);
+ return <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4" role="dialog" aria-modal="true" aria-label={richPlainText(content.title)}><div className="proof-video-surface proof-screen mx-auto max-w-4xl rounded-lg" style={{background:content.appearance.background,color:content.appearance.text}}><BackgroundVideo source={content.appearance.video} poster={content.appearance.image} overlay={content.appearance.overlay} opacity={content.appearance.opacity}/>
+ <header className="proof-screen-band" style={header.style}><div className="proof-screen-inner" style={header.innerStyle}><button type="button" onClick={close} className="float-right rounded border px-4 py-2">Close</button><p><RichInline text={content.eyebrow}/></p><h1 className="font-display text-4xl"><RichInline text={content.title}/></h1><RichParagraphs text={content.intro}/></div></header>
+ {content.blocks.map(b=>{
+  if(b.type==='image'&&!b.image)return <div key={b.id} data-proof-item={b.id}/>;
+  const surface=screenBlockPresentation(b,content.appearance);
+  return <div key={b.id} id={`proof-item-${b.id}`} data-proof-item={b.id} data-proof-section={b.id} className="proof-screen-band" style={surface.style}><div className="proof-screen-inner" style={surface.innerStyle}>
+   {b.grid?<SectionLayoutView layout={{...b.grid,padding:0,paddingX:0,paddingY:0}} groups={groups} background={surface.background} color={surface.text} href={href}/>:b.type==='card_group'?groups[b.groupId]&&<Group group={groups[b.groupId]}/>:b.type==='image'?<Image src={b.image} alt={b.alt} width={1000} height={650}/>:b.type==='button'?<Button style={buttonColors(b.action)} href={href(b.action)}><RichInline links={false} text={b.action.label}/></Button>:b.type==='spacer'?<div style={{height:b.size}}/>:<div className={`proof-screen-copy proof-screen-${b.type} proof-screen-${b.layout}`}>
+   {b.image&&<Image src={b.image} alt={b.alt} width={1000} height={650}/>}{b.caption&&<h2 className="font-display text-2xl"><RichInline text={b.caption}/></h2>}{b.type==='list'?<ul><RichList text={b.text}/></ul>:<RichParagraphs text={b.text}/>} {b.showAction!==false&&(b.showAction||b.type==='callout'||b.type==='feature')&&b.action.value&&b.action.value!=='/'&&<Button className="mt-5" style={buttonColors(b.action)} href={href(b.action)}><RichInline links={false} text={b.action.label}/></Button>}</div>}
+  </div></div>;
+ })}</div></div>;
 }
 export function Website(props:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){return <><TypographyStyles typography={props.configuration.typography}/><WebsiteContent {...props}/></>;}
 function WebsiteContent({documents,content,configuration,frame=true,sermons}:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){

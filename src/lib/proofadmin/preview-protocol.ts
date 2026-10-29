@@ -4,6 +4,7 @@ import {configurationSchema,type SiteConfiguration} from "./site-configuration";
 import { contentSchema, references, type ContentRecord, type Content } from "./contract";
 export const PREVIEW_PROTOCOL = 1;
 export type PreviewPayload = {
+  readOnly?:boolean;
   type: "proofadmin-preview-content";
   protocol: 1;
   siteId: string;
@@ -28,6 +29,7 @@ export function parsePreviewMessage(
     data.id !== id
   )
     return null;
+  if(data.readOnly!==undefined&&typeof data.readOnly!=='boolean')return null;
   const parsed = contentSchema.safeParse(data.content);
   if (!parsed.success) return null;
   const feed=data.feed===undefined?undefined:z.object({id:z.uuid(),content:feedSchema}).strict().safeParse(data.feed);
@@ -63,6 +65,7 @@ export function parsePreviewMessage(
     siteId,
     id,
     content: parsed.data,
+    ...(data.readOnly===true?{readOnly:true}:{}),
     ...(feed?.success?{feed:feed.data}:{}),
     ...(configuration?.success?{configuration:configuration.data}:{}),
     ...(related ? { related } : {}),
