@@ -1,0 +1,9 @@
+# Shared Map element compatibility
+
+Adds the canonical address-only Map element to this client frontend, including Page, Screen and single-column Link Page layouts. Address is trimmed plain text, at most 500 characters; height is an integer from 160 to 800 pixels (default 320); directions are enabled by default. Empty draft addresses render a placeholder with no iframe or outbound URL; shared publication validation requires an address. Embed/directions URLs are derived from the address, never raw HTML or a user-selected iframe host.
+
+Presentation uses the shared default component and scoped proof-map hooks/variables; client CSS can customize its skin without changing the backend. The map fills the column width. Private preview disables iframe pointer input so selecting the element opens the normal inspector; public maps remain interactive. Map insertion in private preview is gated by the trusted parent's deployed capability flag. Existing content is unaffected until a user adds the element. No database, credentials, account setup or hosted content changes.
+
+Release the verified frontend before adding Map to its shared capability attestation. Retain existing per-client capabilities; this Map-only change does not add accordion to clients that did not already support it.
+
+Validation: canonical map constraints/defaults/safe URL tests, existing regression suite, TypeScript check where applicable, and production build passed. Synthetic actual preview components rendered Map in Page, Screen and Link Page layouts; frame width matched the map wrapper and requested height. At 390px, no horizontal overflow was added. Local-only synthetic loaders and loopback test origins were restored/excluded before commit; no production frame policy changed. Shared normal-editor insertion/selection/duplication/movement/save/reload and AI persistence were separately verified in the coordinated shared release.
