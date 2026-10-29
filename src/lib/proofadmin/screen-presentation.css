@@ -1,0 +1,13 @@
+/* A Screen's header, legacy blocks and flexible layouts share this geometry. */
+.proof-screen{padding:0;min-width:0}
+.proof-screen-band{box-sizing:border-box;width:100%;padding:var(--proof-screen-padding-y,48px) var(--proof-screen-padding-x,48px);overflow-wrap:anywhere}
+.proof-screen-inner{box-sizing:border-box;width:100%;max-width:var(--proof-screen-content-width,1200px);margin-inline:auto;min-width:0}
+.proof-screen-inner> :first-child{margin-top:0}
+.proof-screen-inner> :last-child{margin-bottom:0}
+.proof-screen-inner figure{margin-inline:0}
+.proof-screen-inner img,.proof-screen-inner video{max-width:100%;height:auto}
+.proof-screen .proof-screen-inner [data-proof-layout]{padding:0!important;background-color:transparent!important}
+.proof-screen .proof-screen-inner .proof-layout,.proof-screen .proof-screen-inner .standard-layout{padding:0!important;max-width:none!important}
+.proof-screen .proof-screen-inner .proof-layout-column{padding:0}
+.proof-screen-inner .standard-block{margin:0}
+.proof-screen-inner .proof-layout-element{min-width:0}
