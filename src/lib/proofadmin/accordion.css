@@ -10,3 +10,5 @@
 .proof-accordion-body{padding:var(--proof-accordion-body-padding,0 0 1rem);font:inherit;overflow-wrap:anywhere}
 .proof-accordion-body p{margin:0 0 1em}.proof-accordion-body p:last-child{margin-bottom:0}
 .proof-accordion-body ul{list-style:disc;padding-inline-start:1.5em}.proof-accordion-body ol{list-style:decimal;padding-inline-start:1.5em}
+
+.proof-accordion-label-heading{font-family:var(--proof-accordion-heading-font,var(--font-display,inherit));font-size:var(--proof-accordion-heading-size,1.5rem);font-weight:var(--proof-accordion-heading-weight,700);line-height:var(--proof-accordion-heading-line-height,1.2);letter-spacing:var(--proof-accordion-heading-tracking,normal);margin:0}

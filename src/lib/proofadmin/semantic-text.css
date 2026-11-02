@@ -1,0 +1,15 @@
+/* Client frontends own these native presets. Defaults serve the standard template. */
+.cms-layout-text-heading>:where(h2.proof-layout-text){font-family:var(--proof-heading-font,var(--font-heading,inherit));font-size:var(--proof-heading-size,clamp(2rem,6vw,5.6rem));font-weight:var(--proof-heading-weight,800);line-height:var(--proof-heading-line-height,.95);letter-spacing:var(--proof-heading-tracking,-.04em);margin:0}
+.cms-layout-text-hero-heading>:where(h1.proof-layout-text){font-family:var(--proof-heading-font,var(--font-heading,inherit));font-size:var(--proof-hero-heading-size,clamp(2.75rem,9vw,8rem));font-weight:var(--proof-heading-weight,800);line-height:var(--proof-hero-heading-line-height,.9);letter-spacing:var(--proof-heading-tracking,-.04em);margin:0}
+.cms-layout-text-eyebrow>:where(p.proof-layout-text){font-family:var(--proof-eyebrow-font,var(--font-body,inherit));font-size:var(--proof-eyebrow-size,.75rem);font-weight:var(--proof-eyebrow-weight,700);line-height:var(--proof-eyebrow-line-height,1.3);letter-spacing:var(--proof-eyebrow-tracking,.12em);text-transform:uppercase;margin:0}
+/* Also overrides old marks in the raw Tiptap document while it is being edited. */
+[data-proof-text-style] :is(span,strong,b,a,p){font-family:inherit!important;font-size:inherit!important}
+[data-proof-text-style] :is(strong,b){font-weight:inherit!important}
+[data-proof-text-style] [data-inline-editor-host], [data-proof-text-style] .tiptap{font:inherit!important;color:inherit;letter-spacing:inherit;text-transform:inherit}
+:is([data-proof-text-style=heading],[data-proof-text-style=hero_heading]) em{font-family:var(--proof-heading-italic-font,var(--font-garamond,Georgia,serif))!important;font-style:italic;font-weight:var(--proof-heading-italic-weight,500)!important;color:var(--proof-section-accent,var(--cms-accent,inherit))!important}
+:is([data-proof-text-style=heading],[data-proof-text-style=hero_heading]) em *{font-family:inherit!important;font-size:inherit!important;font-weight:inherit!important;color:inherit!important}
+
+[data-proof-text-style] .tiptap p{min-height:0!important;margin:0!important}
+
+/* Native text presets use this client's heading and eyebrow families. */
+.proof-layout{--proof-heading-font:var(--font-display,inherit);--proof-eyebrow-font:var(--font-body,inherit);--proof-accordion-heading-font:var(--font-display,inherit)}

@@ -1,5 +1,5 @@
 // Only mounted by authenticated draft preview shells. Public renderers never call this.
-type Layout = { rows: { id: string; columns: { id: string; elements: { id: string; type?: string; text?: string; action?: {label: string} }[] }[] }[] };
+type Layout = { rows: { id: string; columns: { id: string; elements: { id: string; type?: string; text?: string;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading'; action?: {label: string} }[] }[] }[] };
 type PreviewDocument = {
   id: string;
   content: {
@@ -87,7 +87,7 @@ export function mountPreviewPencils(
   Object.assign(layer.style, { position: 'fixed', inset: '0', pointerEvents: 'none', zIndex: '2147483000' });
   document.body.append(layer);
   const editingStyle = document.createElement('style');
-  editingStyle.textContent = `[data-proof-map] iframe{pointer-events:none}body{padding-bottom:32px}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-proof-selected="true"],[data-proof-selected="true"][data-proof-item]>*{outline:none!important}[data-proof-empty-text]{min-height:1.6em;cursor:text}[data-proof-empty-text]:not([data-proof-inline-active])::before{content:'Add your text here';opacity:.65}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
+  editingStyle.textContent = `body{padding-bottom:32px}[data-proof-map] iframe{pointer-events:none}[data-proof-column]:empty{min-height:112px}[data-proof-row]:empty{min-height:112px}[data-proof-element]{min-height:30px;margin-bottom:18px}[data-proof-selected="true"],[data-proof-selected="true"][data-proof-item]>*{outline:none!important}[data-proof-empty-text]{min-height:1.6em;cursor:text}[data-proof-empty-text]:not([data-proof-inline-active])::before{content:'Add your text here';opacity:.65}[data-preview-pencils] button:focus-visible{outline:3px solid #297cca;outline-offset:3px}[data-preview-pencils] button:hover{background:#eaf3ff!important}`;
   document.head.append(editingStyle);
   let frame = 0;
   let selected = validTarget(rememberedSelection.get(current.id));
@@ -128,15 +128,15 @@ export function mountPreviewPencils(
       anchor: 'anchor' in item ? item.anchor : undefined,
     }));
   });
-  type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number};
+  type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number;semantic?:boolean;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading'};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
-  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,mapEnabled=false;
+  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,mapEnabled=false,textStylesEnabled=false;
   let brandColors:unknown=[];
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
   const descriptors:InlineDescriptor[]=[];
   const plain=previewPlainText;
-  const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number)=>{
+  const addText=(root:HTMLElement|null,target:PreviewTarget,field:InlineDescriptor['field'],value:string|undefined,selector:string,buttonIndex?:number,textStyle?:InlineDescriptor['textStyle'])=>{
     if(!root||value===undefined)return;
     // Layout fields are identified by their validated element path; rich paragraph DOM does not preserve textContent whitespace.
     const explicit=Array.from(root.querySelectorAll<HTMLElement>(`[data-proof-field="${field}"]`));
@@ -144,14 +144,14 @@ export function mountPreviewPencils(
     const matches=explicit.length?explicit:candidates.filter(node=>!!target.elementId||plain(renderedText(node))===plain(value));
     const leaves=matches.filter(candidate=>!matches.some(other=>candidate!==other&&candidate.contains(other)));
     const node=leaves.length===1?leaves[0]:undefined;
-    if(node&&!descriptors.some(d=>d.node===node)){if(field==='text'&&!plain(value))node.dataset.proofEmptyText='true';descriptors.push({node,target,field,value,...(buttonIndex!==undefined?{buttonIndex}:{})});}
+    if(node&&!descriptors.some(d=>d.node===node)){if(field==='text'&&!plain(value))node.dataset.proofEmptyText='true';descriptors.push({node,target,field,value,...(target.elementId&&field==='text'?{semantic:true,textStyle}:{}),...(buttonIndex!==undefined?{buttonIndex}:{})});}
   };
   for(const section of sections){
     const target={sectionId:section.id},root=targetFor(section.id,section.anchor);
     if(section.layout){for(const row of section.layout.rows)for(const column of row.columns)for(const element of column.elements){
       const path={...target,rowId:row.id,columnId:column.id,elementId:element.id};
       const elementNode=nodeFor(path);
-      if(element.type==='text')addText(elementNode,path,'text',element.text,'.proof-layout-text');
+      if(element.type==='text')addText(elementNode,path,'text',element.text,'.proof-layout-text',undefined,element.textStyle);
       if(element.type==='button')addText(elementNode,path,'label',element.action?.label,'a,button');
     }}else if(current.content.kind==='page'){
       const item=current.content.sections?.find(item=>item.id===section.id);
@@ -170,7 +170,7 @@ export function mountPreviewPencils(
   const inlineUrl='/proof-inline-editor.js';
   void import(/* webpackIgnore: true */ inlineUrl).then(module=>{
     if(disposed)return;
-    inline=module.createInlineEditor({layer,getBrandColors:()=>brandColors,onEdit:(edit:unknown)=>{
+    inline=module.createInlineEditor({layer,canUseTextStyles:()=>textStylesEnabled,getBrandColors:()=>brandColors,onEdit:(edit:unknown)=>{
       schedule();
       if(siteId&&window.parent!==window)window.parent.postMessage({type:'proofadmin-preview-inline-edit',protocol:1,siteId,id:current.id,edit},parentOrigin);
     },onSettings:(target:PreviewTarget)=>activateTarget(target)});
@@ -215,7 +215,7 @@ export function mountPreviewPencils(
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
     Object.assign(menu.style, { position: 'absolute', pointerEvents: 'auto', display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px', maxWidth: 'calc(100vw - 16px)', borderRadius: '10px', background: '#fff', border: '1px solid #d2ddeb', boxShadow: '0 6px 24px #0003' });
-    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(mapEnabled?['map']:[]),...(accordionEnabled?['accordion']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
+    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(accordionEnabled?['accordion']:[]),...(mapEnabled?['map']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
       const option = document.createElement('button'); option.type = 'button';
       const sermonLabels:Record<string,string>={recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
       const label = sermonLabels[type]??(type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1));
@@ -328,8 +328,9 @@ export function mountPreviewPencils(
     }
     if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
     inlineEnabled=event.data.inlineEditing===true;
-    mapEnabled=event.data.map===true;
+    textStylesEnabled=event.data.textSemanticStyles===true;
     accordionEnabled=event.data.accordion===true;
+    mapEnabled=event.data.map===true;
     brandColors=event.data.brandColors;
     if (event.data.target === null) { setSelected(null); closeMenu(); return; }
     const target = validTarget(event.data.target);
