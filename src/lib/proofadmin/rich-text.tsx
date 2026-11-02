@@ -1,5 +1,5 @@
 import {isGoogleFont,fontStack,googleFontUrl} from './typography';
-import { isValidElement, type ReactNode } from "react";
+import { Fragment,isValidElement, type ReactNode } from "react";
 import { safeUrl } from "@/lib/proofadmin/contract";
 
 const tokenPattern =
@@ -93,9 +93,9 @@ function formatInline(text: string, keyPrefix: string, depth = 0): ReactNode[] {
   return nodes;
 }
 
-export function RichInline({ text, links = true }: { text: string; links?: boolean }) {
+export function RichInline({ text, links = true, inlineParagraphs=false }: { text: string; links?: boolean;inlineParagraphs?:boolean }) {
   const document = readDocument(text);
-  if (document) return <>{renderDocumentNodes(document.content ?? [], links)}</>;
+  if (document) return <>{renderDocumentNodes(document.content ?? [], links,inlineParagraphs)}</>;
   return <>{text.split('\n').map((line,index)=><span key={index}>{index>0&&<br/>}{formatInline(line,'rich-'+index)}</span>)}</>;
 }
 
@@ -180,12 +180,13 @@ function readDocument(text: string): RichDocumentNode | null {
   }
 }
 
-function renderDocumentNodes(nodes: RichDocumentNode[], links = true): ReactNode[] {
+function renderDocumentNodes(nodes: RichDocumentNode[], links = true,inlineParagraphs=false): ReactNode[] {
  return nodes.map((node,index)=>{
   if(node.type==='hardBreak')return <br key={index}/>;
-  if(node.type==='paragraph')return <span key={index} style={{display:'block',whiteSpace:'pre-wrap',textAlign:node.attrs?.textAlign as 'left'|'center'|'right'|'justify'|undefined,minHeight:'1em',...(index?{marginTop:'.5em'}:{})}}>{renderDocumentNodes(node.content??[],links)}</span>;
-  if(node.type==='bulletList'||node.type==='orderedList')return <span key={index} role="list" style={{display:'block',paddingLeft:'1.5em',marginTop:'.5em'}}>{(node.content??[]).map((item,i)=><span key={i} role="listitem" style={{display:'block',position:'relative'}}><span aria-hidden="true" style={{position:'absolute',left:'-1.5em'}}>{node.type==='orderedList'?`${i+1}.`:'•'}</span>{renderDocumentNodes(item.content??[],links)}</span>)}</span>;
-  if(node.type==='listItem'||node.type==='doc')return <span key={index}>{renderDocumentNodes(node.content??[],links)}</span>;
+  if(node.type==='paragraph'&&inlineParagraphs)return <Fragment key={index}>{index>0&&<br/>}{renderDocumentNodes(node.content??[],links,inlineParagraphs)}</Fragment>;
+  if(node.type==='paragraph')return <span key={index} style={{display:'block',whiteSpace:'pre-wrap',textAlign:node.attrs?.textAlign as 'left'|'center'|'right'|'justify'|undefined,minHeight:'1em',...(index?{marginTop:'.5em'}:{})}}>{renderDocumentNodes(node.content??[],links,inlineParagraphs)}</span>;
+  if(node.type==='bulletList'||node.type==='orderedList')return <span key={index} role="list" style={{display:'block',paddingLeft:'1.5em',marginTop:'.5em'}}>{(node.content??[]).map((item,i)=><span key={i} role="listitem" style={{display:'block',position:'relative'}}><span aria-hidden="true" style={{position:'absolute',left:'-1.5em'}}>{node.type==='orderedList'?`${i+1}.`:'•'}</span>{renderDocumentNodes(item.content??[],links,inlineParagraphs)}</span>)}</span>;
+  if(node.type==='listItem'||node.type==='doc')return <span key={index}>{renderDocumentNodes(node.content??[],links,inlineParagraphs)}</span>;
   let result:ReactNode=node.text??'';
   for(const mark of node.marks??[]){
    if(mark.type==='bold')result=<strong style={{fontWeight:700}}>{result}</strong>;

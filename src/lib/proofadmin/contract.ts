@@ -115,11 +115,11 @@ export const nativeSectionSchema = z.object({
 export const accordionItemSchema = z.object({id,title:z.string().trim().min(1).max(200).refine(value=>!value.startsWith('richtext:v1:'),'Accordion titles must be plain text.'),body:text}).strict();
 export const layoutElementSchema = z.discriminatedUnion("type", [
   z.object({id,type:z.literal('map'),address:z.string().trim().max(500).refine(value=>!value.startsWith('richtext:v1:')&&!/[\u0000-\u001f\u007f]/.test(value),'Use a plain address on one line.').default(''),height:z.number().int().min(160).max(800).default(320),showDirections:z.boolean().default(true)}).strict(),
-  z.object({id,type:z.literal("accordion"),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
+  z.object({id,type:z.literal("accordion"),labelStyle:z.enum(['default','heading']).optional(),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
  z.object({id,type:z.enum(sermonElementTypes)}).strict(),
   z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
-  z.object({id, type:z.literal("text"), text}).strict(),
+  z.object({id, type:z.literal("text"), text,textStyle:z.enum(['body','eyebrow','heading','hero_heading']).optional()}).strict(),
   z.object({id, type:z.literal("image"), image:imageUrl, alt:z.string().max(500), fill:z.boolean().default(false), focalX:z.number().min(0).max(100).default(50), focalY:z.number().min(0).max(100).default(50)}).strict(),
   z.object({id, type:z.literal("button"), alignment:z.enum(["left","center","right"]).optional(), action:actionSchema}).strict(),
 ]);

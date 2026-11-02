@@ -9,7 +9,7 @@ export function Accordion({element}:{element:Extract<LayoutElement,{type:'accord
  const group=useId();
  return <div className="proof-accordion" data-proof-accordion={element.id}>
   {element.items.map((item,index)=><details key={item.id} className="proof-accordion-item" data-proof-accordion-item={item.id} name={element.allowMultiple?undefined:`proof-accordion-${group}`} open={element.openFirst&&index===0||undefined}>
-   <summary className="proof-accordion-summary" data-proof-accordion-controls><span>{item.title}</span><span className="proof-accordion-icon" aria-hidden="true"/></summary>
+   <summary className="proof-accordion-summary" data-proof-accordion-controls>{element.labelStyle==='heading'?<h3 className="proof-accordion-label-heading">{item.title}</h3>:<span>{item.title}</span>}<span className="proof-accordion-icon" aria-hidden="true"/></summary>
    <div className="proof-accordion-body"><RichInline text={item.body}/></div>
   </details>)}
  </div>;
