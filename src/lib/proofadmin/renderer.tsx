@@ -6,7 +6,7 @@ import {TypographyStyles} from './typography-view';
 import {LinkPageView} from './link-page';
 import {SectionLayoutView} from './section-layout';
 import {BackgroundVideo} from './background-video';
-import {buttonColors} from './button-colors';
+import {buttonColors,hasButtonAppearance} from './button-colors';
 import {useState} from 'react';
 import Image from 'next/image';
 import {Button} from '@/components/ui/Button';
@@ -26,9 +26,9 @@ export function Group({group}:{group:GroupContent}){
  const cards=group.cards.filter(c=>!c.hidden);if(group.presentation==='series')cards.sort((a,b)=>(b.seriesDates?.start??'').localeCompare(a.seriesDates?.start??''));
  if(group.presentation==='slides')return <HeroCarousel content={{eyebrow:'',headline:'',subheadline:'',ctaLabel:'',ctaHref:''}} slides={cards.map((c,i)=>({id:c.id,imageUrl:c.image||null,videoUrl:c.video||null,sortOrder:i}))}/>;
  return <div className="grid gap-5 md:grid-cols-3">{cards.map(c=><div key={c.id} id={`proof-item-${c.id}`} data-proof-item={c.id}>
- {group.presentation==='series'?<SermonSeriesCard series={{id:c.id,name:c.title,dateLabel:c.description,startDate:c.seriesDates?.start??'',endDate:c.seriesDates?.end??null,imageUrl:c.image,youtubePlaylistUrl:c.action.value,isPublished:true}}/>:<article className="overflow-hidden rounded-lg bg-white shadow-sm">
+ {group.presentation==='series'?<SermonSeriesCard actionStyle={hasButtonAppearance(c.action)?buttonColors(c.action,{background:'var(--color-terracotta,#b8623c)',text:'#ffffff',outlineText:'var(--color-ink,#25211d)'}):undefined} series={{id:c.id,name:c.title,dateLabel:c.description,startDate:c.seriesDates?.start??'',endDate:c.seriesDates?.end??null,imageUrl:c.image,youtubePlaylistUrl:c.action.value,isPublished:true}}/>:<article className="overflow-hidden rounded-lg bg-white shadow-sm">
  {c.image&&<div className="relative aspect-video"><Image src={c.image} alt={c.imageAlt} fill sizes="(min-width:768px) 33vw,100vw" className="object-contain"/></div>}
- <div className="p-5"><h3 className="font-display text-2xl font-bold"><RichInline text={c.title}/></h3>{c.subtitle&&<p className="mt-3 font-bold text-terracotta"><RichInline text={c.subtitle}/></p>}{c.details?.map((d,i)=><p key={i} className="font-bold text-terracotta"><RichInline text={d}/></p>)}<div className="mt-3 text-muted"><RichParagraphs text={c.description}/></div>{c.action.value&&<Button href={href(c.action)} className="mt-5"><RichInline links={false} text={c.action.label}/></Button>}</div>
+ <div className="p-5"><h3 className="font-display text-2xl font-bold"><RichInline text={c.title}/></h3>{c.subtitle&&<p className="mt-3 font-bold text-terracotta"><RichInline text={c.subtitle}/></p>}{c.details?.map((d,i)=><p key={i} className="font-bold text-terracotta"><RichInline text={d}/></p>)}<div className="mt-3 text-muted"><RichParagraphs text={c.description}/></div>{c.action.value&&<Button href={href(c.action)} style={hasButtonAppearance(c.action)?buttonColors(c.action,{background:'var(--color-terracotta,#b8623c)',text:'#ffffff',outlineText:'var(--color-ink,#25211d)'}):undefined} className="mt-5"><RichInline links={false} text={c.action.label}/></Button>}</div>
  </article>}
  </div>)}</div>;
 }

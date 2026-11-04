@@ -13,3 +13,11 @@
 
 /* Native text presets use this client's heading and eyebrow families. */
 .proof-layout{--proof-heading-font:var(--font-display,inherit);--proof-eyebrow-font:var(--font-body,inherit);--proof-accordion-heading-font:var(--font-display,inherit)}
+
+/* City View native presets match Section and HeroCarousel at their theme breakpoints. */
+.proof-layout{--proof-heading-font:var(--font-display),Georgia,serif;--proof-heading-size:1.875rem;--proof-hero-heading-size:2.25rem;--proof-heading-weight:700;--proof-heading-line-height:1.25;--proof-hero-heading-line-height:1.25;--proof-heading-tracking:normal;--proof-eyebrow-font:var(--font-inter),Arial,Helvetica,sans-serif;--proof-eyebrow-size:.875rem;--proof-eyebrow-line-height:1.428571;--proof-eyebrow-weight:700;--proof-eyebrow-tracking:.18em}
+@media(min-width:640px){.proof-layout{--proof-heading-size:3rem;--proof-hero-heading-size:3.75rem}}
+@media(min-width:1024px){.proof-layout{--proof-hero-heading-size:4.5rem}}
+
+/* Body-only phone override; desktop marks and native responsive presets remain intact. */
+@media(max-width:767px){[data-proof-mobile-text-size]{font-size:var(--proof-mobile-font-size)!important}[data-proof-mobile-text-size] :is(span,strong,em,b,i,a,p){font-size:inherit!important}}
