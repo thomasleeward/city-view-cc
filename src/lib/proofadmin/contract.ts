@@ -1,3 +1,4 @@
+import {rowHasEventElement} from './event-elements';
 import {sermonElementTypes,rowHasSermonElement} from './sermon-elements';
 import { z } from "zod";
 import { isReservedRoutePath } from "./routes";
@@ -118,6 +119,8 @@ export const layoutElementSchema = z.discriminatedUnion("type", [
   z.object({id,type:z.literal('map'),address:z.string().trim().max(500).refine(value=>!value.startsWith('richtext:v1:')&&!/[\u0000-\u001f\u007f]/.test(value),'Use a plain address on one line.').default(''),height:z.number().int().min(160).max(800).default(320),showDirections:z.boolean().default(true),showAddress:z.boolean().optional(),directionsStyle:z.enum(['link','button']).optional()}).strict(),
   z.object({id,type:z.literal("accordion"),labelStyle:z.enum(['default','heading']).optional(),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
  z.object({id,type:z.enum(sermonElementTypes)}).strict(),
+  z.object({id,type:z.literal('featured_events'),count:z.number().int().min(1).max(12).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional(),viewAllAction:actionSchema.refine(action=>action.kind==='screen'||/^\/(?:[a-zA-Z0-9_-]+\/?)*$/.test(action.value),'Choose a same-site page or Screen.').optional()}).strict(),
+  z.object({id,type:z.literal('all_events'),pageSize:z.number().int().min(1).max(24).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional()}).strict(),
   z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
   z.object({id, type:z.literal("text"), text,textStyle:z.enum(['body','eyebrow','heading','hero_heading']).optional(),mobileFontSize:z.number().int().min(12).max(96).optional()}).strict(),
@@ -133,6 +136,7 @@ export const layoutSchema = z.object({
   fullWidth:z.boolean().default(false),
 }).strict().superRefine((layout,ctx)=>{
  layout.rows.forEach((row,index)=>{if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});});
+  for(const [index,row] of layout.rows.entries())if(row.columns.length!==1&&rowHasEventElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Event collections require a single-column row.'});
   const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.flatMap(element=>[element.id,...(element.type==='accordion'?element.items.map(item=>item.id):[])])])]);
   if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns, elements and accordion items must have unique IDs."});
 });
@@ -296,7 +300,7 @@ export const contentSchema = z
         });
       if (!content.group && content.slug === "home")
         for (const type of ["events", "sermon", "pathway"] as const)
-          if (content.sections.filter((s) => s.type === type).length > 1)
+          if (content.sections.filter((s) => s.type === type && !(type==='events'&&s.layout)).length > 1)
             ctx.addIssue({
               code: "custom",
               message: `Only one ${type} section is allowed.`,
@@ -374,7 +378,7 @@ export function references(
     content.cards.forEach((card) => action(card.action));
   if (content.kind === "screen")
     content.blocks.forEach((block) => {
-      block.grid?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
+      block.grid?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
       if (block.type === "card_group")
         result.push({ id: block.groupId, kind: "card_group" });
       if (block.type === "button" || block.showAction || ["feature", "callout"].includes(block.type)) action(block.action);
@@ -384,7 +388,7 @@ export function references(
       section.native?.groups.forEach(group => result.push({id:group.id,kind:"card_group"}));
       if (section.type === "card_group")
         result.push({ id: section.groupId, kind: "card_group" });
-      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
+      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
       section.buttons.forEach(action);
       section.items.forEach((item) => action(item.action));
     });
