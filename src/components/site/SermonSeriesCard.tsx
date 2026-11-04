@@ -1,11 +1,12 @@
 
 import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 import Image from "next/image";
+import type {CSSProperties} from "react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import type { SermonSeries } from "@/lib/content/sermons";
 
-export function SermonSeriesCard({ series }: { series: SermonSeries }) {
+export function SermonSeriesCard({ series,actionStyle }: { series: SermonSeries;actionStyle?:CSSProperties }) {
   return (
     <article className="group overflow-hidden rounded-lg border border-ink/10 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
       <div className="relative aspect-video bg-cream">
@@ -33,6 +34,7 @@ export function SermonSeriesCard({ series }: { series: SermonSeries }) {
         <Button
           href={series.youtubePlaylistUrl}
           variant="ghost"
+          style={actionStyle}
           className="mt-5 w-full justify-between"
         >
           Watch <ExternalLink size={16} />
