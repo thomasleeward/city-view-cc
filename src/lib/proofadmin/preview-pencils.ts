@@ -130,7 +130,7 @@ export function mountPreviewPencils(
   });
   type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number;semantic?:boolean;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading'};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
-  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,mapEnabled=false,textStylesEnabled=false;
+  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,mapEnabled=false,featuredEventsEnabled=false,allEventsEnabled=false,textStylesEnabled=false;
   let brandColors:unknown=[];
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
@@ -215,9 +215,9 @@ export function mountPreviewPencils(
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
     Object.assign(menu.style, { position: 'absolute', pointerEvents: 'auto', display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px', maxWidth: 'calc(100vw - 16px)', borderRadius: '10px', background: '#fff', border: '1px solid #d2ddeb', boxShadow: '0 6px 24px #0003' });
-    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(accordionEnabled?['accordion']:[]),...(mapEnabled?['map']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
+    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(accordionEnabled?['accordion']:[]),...(mapEnabled?['map']:[]),...(featuredEventsEnabled?['featured_events']:[]),...(allEventsEnabled?['all_events']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
       const option = document.createElement('button'); option.type = 'button';
-      const sermonLabels:Record<string,string>={recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
+      const sermonLabels:Record<string,string>={featured_events:'Featured Events',all_events:'All Events',recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
       const label = sermonLabels[type]??(type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1));
       const insertRow=sections.find(section=>section.id===request.sectionId)?.layout?.rows.find(row=>row.id===request.rowId);
       if(sermonLabels[type]&&insertRow?.columns.length!==1){option.disabled=true;option.title='Sermon elements require a single-column row.';}
@@ -246,7 +246,7 @@ export function mountPreviewPencils(
         if (!row.columns.length) plus('Add column', 'Add first column', () => boundsFor(rowTarget), rowTarget, 'empty', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: null }), true);
         for (const [columnIndex, column] of row.columns.entries()) {
           const columnTarget = { ...rowTarget, columnId: column.id };
-          if (row.columns.length < 6&&!row.columns.some(column=>column.elements.some(element=>['recent_sermons','recent_series','all_sermons','all_series'].includes(element.type??'')))) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
+          if (row.columns.length < 6&&!row.columns.some(column=>column.elements.some(element=>['recent_sermons','recent_series','all_sermons','all_series','featured_events','all_events'].includes(element.type??'')))) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
           if (column.elements.length >= 20) continue;
           const request = { kind: 'element', sectionId: section.id, rowId: row.id, columnId: column.id };
           if (!column.elements.length) plus('Add element', 'Add element to empty column', () => boundsFor(columnTarget), columnTarget, 'empty', button => showElements(button, { ...request, afterId: null }), true);
@@ -331,6 +331,7 @@ export function mountPreviewPencils(
     textStylesEnabled=event.data.textSemanticStyles===true;
     accordionEnabled=event.data.accordion===true;
     mapEnabled=event.data.map===true;
+    featuredEventsEnabled=event.data.featuredEvents===true;allEventsEnabled=event.data.allEvents===true;
     brandColors=event.data.brandColors;
     if (event.data.target === null) { setSelected(null); closeMenu(); return; }
     const target = validTarget(event.data.target);
