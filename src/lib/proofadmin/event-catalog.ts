@@ -1,11 +1,17 @@
 import {z} from 'zod';
 import {feedSchema} from './feeds';
 import {eventReferenceSchema,eventKey,type EventReference} from './event-reference';
+import {eventTagFilterSchema} from './event-tag-filter';
 export const eventOrderSchema=z.enum(['soonest','latest']);
 export const eventFeedSchema=feedSchema.options[0].refine(event=>!event.endsAt||Date.parse(event.endsAt)>=Date.parse(event.startsAt),'End must be on or after the start.');
 export const publicEventSchema=z.object({id:z.string().max(300),reference:eventReferenceSchema,content:eventFeedSchema,featured:z.boolean()}).strict();
 export type PublicEvent=z.infer<typeof publicEventSchema>;
-export const eventQuerySchema=z.object({kind:z.enum(['featured','all']).default('all'),limit:z.coerce.number().int().min(1).max(24).optional(),page:z.coerce.number().int().min(1).max(10000).default(1),order:eventOrderSchema.default('soonest')}).strict().transform(q=>({...q,limit:q.limit??(q.kind==='featured'?3:9)})).superRefine((q,ctx)=>{if(q.kind==='featured'&&(q.limit>12||q.page!==1))ctx.addIssue({code:'custom',message:'Featured events use one page of at most 12 events.'});});
+const queryTagFilter=z.preprocess(value=>{
+ if(typeof value!=='string')return value;
+ if(value.length>6000)return null;
+ try{return JSON.parse(value);}catch{return null;}
+},eventTagFilterSchema);
+export const eventQuerySchema=z.object({kind:z.enum(['featured','all']).default('all'),limit:z.coerce.number().int().min(1).max(24).optional(),page:z.coerce.number().int().min(1).max(10000).default(1),order:eventOrderSchema.default('soonest'),tagFilter:queryTagFilter.optional()}).strict().transform(q=>({...q,limit:q.limit??(q.kind==='featured'?3:9)})).superRefine((q,ctx)=>{if(q.kind==='featured'&&(q.limit>12||q.page!==1))ctx.addIssue({code:'custom',message:'Featured events use one page of at most 12 events.'});});
 export type EventQuery=z.infer<typeof eventQuerySchema>;
 export const eventPageSchema=z.object({items:z.array(publicEventSchema).max(24),page:z.number().int().min(1).max(10000),pages:z.number().int().min(1).max(10000),total:z.number().int().min(0).max(10000),hasNext:z.boolean()}).strict();
 const dateFormatters=new Map<string,Intl.DateTimeFormat>();
@@ -23,7 +29,7 @@ export function publishedEventCatalog(rows:{id:string;content:unknown;reference:
 }
 export function queryEventCatalog(catalog:PublicEvent[],q:EventQuery){
  const direction=q.order==='soonest'?1:-1;
- const all=catalog.filter(event=>q.kind==='all'||event.featured).sort((a,b)=>direction*(Date.parse(a.content.startsAt)-Date.parse(b.content.startsAt))||a.id.localeCompare(b.id));
+ const all=catalog.filter(event=>(q.kind==='all'||event.featured)&&(!q.tagFilter||(event.reference.provider==='planningcenter'&&event.reference.organizationId===q.tagFilter.organizationId&&event.content.tagIds?.some(id=>q.tagFilter!.tagIds.includes(id))))).sort((a,b)=>direction*(Date.parse(a.content.startsAt)-Date.parse(b.content.startsAt))||a.id.localeCompare(b.id));
  const offset=(q.page-1)*q.limit;
  return {items:all.slice(offset,offset+q.limit),page:q.page,pages:q.kind==='featured'?1:Math.max(1,Math.ceil(all.length/q.limit)),total:all.length,hasNext:q.kind==='all'&&all.length>offset+q.limit};
 }
