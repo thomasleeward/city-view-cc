@@ -1,5 +1,6 @@
 // Only mounted by authenticated draft preview shells. Public renderers never call this.
-type Layout = { rows: { id: string; columns: { id: string; elements: { id: string; type?: string; text?: string;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading'; action?: {label: string} }[] }[] }[] };
+type PreviewElement={id:string;type?:string;text?:string;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading';action?:{label:string};items?:{id:string;title:string;body:string;grid?:Layout}[]};
+type Layout={rows:{id:string;columns:{id:string;elements:PreviewElement[]}[]}[]};
 type PreviewDocument = {
   id: string;
   content: {
@@ -9,7 +10,7 @@ type PreviewDocument = {
     cards?: { id: string; title: string; description?:string;action?:{label:string};hidden?:boolean }[];
   };
 };
-export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: string; elementId?: string };
+export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: string; elementId?: string;accordion?:{itemId:string;rowId?:string;columnId?:string;elementId?:string} };
 export type PreviewBounds = { x: number; y: number; width: number; height: number };
 type Focus = (target: PreviewTarget | null, bounds: PreviewBounds | null, action: 'select' | 'position' | 'dismiss' | 'insert-menu') => void;
 const rememberedSelection = new Map<string, PreviewTarget>();
@@ -37,7 +38,7 @@ function renderedText(node:Node):string{
   return node instanceof Element&&/^(P|DIV|H[1-6]|LI|UL|OL|SECTION)$/.test(node.tagName)?`\n${text}\n`:text;
 }
 function equalTarget(a: PreviewTarget | null, b: PreviewTarget | null) {
-  return a?.sectionId === b?.sectionId && a?.rowId === b?.rowId && a?.columnId === b?.columnId && a?.elementId === b?.elementId;
+  return a?.sectionId === b?.sectionId && a?.rowId === b?.rowId && a?.columnId === b?.columnId && a?.elementId === b?.elementId && JSON.stringify(a?.accordion)===JSON.stringify(b?.accordion);
 }
 export function mountPreviewPencils(
   current: PreviewDocument,
@@ -53,23 +54,45 @@ export function mountPreviewPencils(
   const validTarget = (input: unknown): PreviewTarget | null => {
     if (!input || typeof input !== 'object') return null;
     const value = input as Record<string, unknown>;
-    if (Object.keys(value).some(key => !['sectionId', 'rowId', 'columnId', 'elementId'].includes(key))) return null;
+    if (Object.keys(value).some(key => !['sectionId', 'rowId', 'columnId', 'elementId','accordion'].includes(key))) return null;
     if (typeof value.sectionId !== 'string') return null;
     const section = sections.find(item => item.id === value.sectionId && !item.hidden);
     if (!section) return null;
-    if (value.rowId === undefined) return value.columnId === undefined && value.elementId === undefined ? { sectionId: section.id } : null;
+    if (value.rowId === undefined) return value.accordion===undefined && value.columnId === undefined && value.elementId === undefined ? { sectionId: section.id } : null;
     const row = section.layout?.rows.find(item => item.id === value.rowId);
     if (!row) return null;
-    if (value.columnId === undefined) return value.elementId === undefined ? { sectionId: section.id, rowId: row.id } : null;
+    if (value.columnId === undefined) return value.accordion===undefined && value.elementId === undefined ? { sectionId: section.id, rowId: row.id } : null;
     const column = row.columns.find(item => item.id === value.columnId);
     if (!column) return null;
-    if (value.elementId === undefined) return { sectionId: section.id, rowId: row.id, columnId: column.id };
-    return column.elements.some(item => item.id === value.elementId) ? { sectionId: section.id, rowId: row.id, columnId: column.id, elementId: value.elementId as string } : null;
+    if (value.elementId === undefined) return value.accordion===undefined?{ sectionId: section.id, rowId: row.id, columnId: column.id }:null;
+    const element=column.elements.find(item=>item.id===value.elementId);if(!element)return null;
+    const outer={sectionId:section.id,rowId:row.id,columnId:column.id,elementId:element.id};
+    if(value.accordion===undefined)return outer;
+    if(element.type!=='accordion'||!value.accordion||typeof value.accordion!=='object'||Array.isArray(value.accordion))return null;
+    const nested=value.accordion as Record<string,unknown>;
+    if(Object.keys(nested).some(key=>!['itemId','rowId','columnId','elementId'].includes(key)))return null;
+    const item=element.items?.find(item=>item.id===nested.itemId);if(!item)return null;
+    const context={itemId:item.id};
+    if(nested.rowId===undefined)return nested.columnId===undefined&&nested.elementId===undefined?{...outer,accordion:context}:null;
+    const answerRow=item.grid?.rows.find(row=>row.id===nested.rowId);if(!answerRow)return null;
+    if(nested.columnId===undefined)return nested.elementId===undefined?{...outer,accordion:{...context,rowId:answerRow.id}}:null;
+    const answerColumn=answerRow.columns.find(column=>column.id===nested.columnId);if(!answerColumn)return null;
+    if(nested.elementId===undefined)return {...outer,accordion:{...context,rowId:answerRow.id,columnId:answerColumn.id}};
+    const leaf=answerColumn.elements.find(element=>element.id===nested.elementId);return leaf?{...outer,accordion:{...context,rowId:answerRow.id,columnId:answerColumn.id,elementId:leaf.id}}:null;
   };
   const nodeFor = (target: PreviewTarget) => {
     const section = sections.find(item => item.id === target.sectionId);
     const root = targetFor(target.sectionId, section?.anchor);
     if (!root) return null;
+    if(target.accordion){
+      const accordion=root.querySelector<HTMLElement>(`[data-proof-element="${CSS.escape(target.elementId!)}"]`);
+      const item=accordion?.querySelector<HTMLElement>(`[data-proof-accordion-item="${CSS.escape(target.accordion.itemId)}"]`);if(!item)return null;
+      const nested=target.accordion;
+      if(nested.elementId)return item.querySelector<HTMLElement>(`[data-proof-element="${CSS.escape(nested.elementId)}"]`);
+      if(nested.columnId)return item.querySelector<HTMLElement>(`[data-proof-column="${CSS.escape(nested.columnId)}"]`);
+      if(nested.rowId)return item.querySelector<HTMLElement>(`[data-proof-row="${CSS.escape(nested.rowId)}"]`);
+      return item;
+    }
     if (target.elementId) return root.querySelector<HTMLElement>(`[data-proof-element="${CSS.escape(target.elementId)}"]`);
     if (target.columnId) return root.querySelector<HTMLElement>(`[data-proof-column="${CSS.escape(target.columnId)}"]`);
     if (target.rowId) return root.querySelector<HTMLElement>(`[data-proof-row="${CSS.escape(target.rowId)}"]`);
@@ -108,6 +131,7 @@ export function mountPreviewPencils(
   const setSelected = (target: PreviewTarget | null) => {
     const changed = !equalTarget(selected, target);
     selected = target;
+    if(target?.accordion?.rowId){const outer=nodeFor({...target,accordion:undefined});const details=outer?.querySelector<HTMLDetailsElement>(`details[data-proof-accordion-item="${CSS.escape(target.accordion.itemId)}"]`);if(details)details.open=true;}
     if (target) rememberedSelection.set(current.id, target);
     else rememberedSelection.delete(current.id);
     if (changed) previousPosition = '';
@@ -130,7 +154,7 @@ export function mountPreviewPencils(
   });
   type InlineDescriptor={node:HTMLElement;target:PreviewTarget;field:'text'|'label'|'title'|'body'|'eyebrow'|'description';value:string;buttonIndex?:number;semantic?:boolean;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading'};
   type InlineController={start:(descriptor:InlineDescriptor,event?:MouseEvent)=>void;finish:()=>void;contains:(node:Element)=>boolean;activeNode:()=>HTMLElement|undefined;destroy:()=>void};
-  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,mapEnabled=false,featuredEventsEnabled=false,allEventsEnabled=false,textStylesEnabled=false;
+  let inline:InlineController|null=null,disposed=false,inlineEnabled=false,accordionEnabled=false,answerLayoutsEnabled=false,mapEnabled=false,featuredEventsEnabled=false,allEventsEnabled=false,textStylesEnabled=false;
   let brandColors:unknown=[];
   let pendingText:InlineDescriptor|null=null;
   const loading=document.createElement('div');loading.setAttribute('role','status');Object.assign(loading.style,{position:'absolute',display:'none',pointerEvents:'none',background:'#fff',color:'#174b79',padding:'6px 10px',border:'1px solid #a7c4e4',borderRadius:'8px',font:'12px system-ui,sans-serif'});layer.append(loading);
@@ -153,6 +177,11 @@ export function mountPreviewPencils(
       const elementNode=nodeFor(path);
       if(element.type==='text')addText(elementNode,path,'text',element.text,'.proof-layout-text',undefined,element.textStyle);
       if(element.type==='button')addText(elementNode,path,'label',element.action?.label,'a,button');
+      if(element.type==='accordion')for(const item of element.items??[])for(const answerRow of item.grid?.rows??[])for(const answerColumn of answerRow.columns)for(const leaf of answerColumn.elements){
+        const nested={...path,accordion:{itemId:item.id,rowId:answerRow.id,columnId:answerColumn.id,elementId:leaf.id}},node=nodeFor(nested);
+        if(leaf.type==='text')addText(node,nested,'text',leaf.text,'.proof-layout-text',undefined,leaf.textStyle);
+        if(leaf.type==='button')addText(node,nested,'label',leaf.action?.label,'a,button');
+      }
     }}else if(current.content.kind==='page'){
       const item=current.content.sections?.find(item=>item.id===section.id);
       addText(root,target,'title',item?.title,'h1,h2,h3');addText(root,target,'eyebrow',item?.eyebrow,'p,span');addText(root,target,'body',item?.body,'p,div');
@@ -203,11 +232,11 @@ export function mountPreviewPencils(
     button.addEventListener('pointerleave', () => { if (!menu) { activeInsertion = null; schedule(); } });
     button.addEventListener('focus', () => { activeInsertion = control; schedule(); });
     button.addEventListener('blur', () => { if (!menu) { activeInsertion = null; schedule(); } });
-    button.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); activeInsertion = control; activate(button); });
+    button.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); if (target?.accordion && !answerLayoutsEnabled) return; activeInsertion = control; activate(button); });
     layer.append(button); insertControls.push(control);
   };
   const showElements = (button: HTMLButtonElement, request: Record<string, unknown>) => {
-    const menuTarget = validTarget({ sectionId: request.sectionId, rowId: request.rowId, columnId: request.columnId });
+    const menuTarget = validTarget({ sectionId: request.sectionId, rowId: request.rowId, columnId: request.columnId,...(request.accordion?{elementId:request.elementId,accordion:request.accordion}:{}) });
     const menuBounds = menuTarget ? boundsFor(menuTarget) : undefined;
     // The parent inspector must yield space to this chooser without clearing its selection.
     if (menuTarget && menuBounds) focus?.(menuTarget, asBounds(menuBounds), 'insert-menu');
@@ -215,7 +244,9 @@ export function mountPreviewPencils(
     closeMenu(); activeInsertion = insertion;
     menu = document.createElement('div'); menu.setAttribute('role', 'toolbar'); menu.setAttribute('aria-label', 'Add element');
     Object.assign(menu.style, { position: 'absolute', pointerEvents: 'auto', display: 'flex', flexWrap: 'wrap', gap: '4px', padding: '8px', maxWidth: 'calc(100vw - 16px)', borderRadius: '10px', background: '#fff', border: '1px solid #d2ddeb', boxShadow: '0 6px 24px #0003' });
-    for (const type of ['text', 'image', 'button', 'video', 'card_group',...(accordionEnabled?['accordion']:[]),...(mapEnabled?['map']:[]),...(featuredEventsEnabled?['featured_events']:[]),...(allEventsEnabled?['all_events']:[]),'recent_sermons','recent_series','all_sermons','all_series']) {
+    if(request.accordion&&!answerLayoutsEnabled)return;
+    const types=request.accordion?['text','image','button','video','card_group',...(mapEnabled?['map']:[])]:['text','image','button','video','card_group',...(accordionEnabled?['accordion']:[]),...(mapEnabled?['map']:[]),...(featuredEventsEnabled?['featured_events']:[]),...(allEventsEnabled?['all_events']:[]),'recent_sermons','recent_series','all_sermons','all_series'];
+    for (const type of types) {
       const option = document.createElement('button'); option.type = 'button';
       const sermonLabels:Record<string,string>={featured_events:'Featured Events',all_events:'All Events',recent_sermons:'Most Recent Sermons',recent_series:'Most Recent Series',all_sermons:'All Sermons',all_series:'All Series'};
       const label = sermonLabels[type]??(type === 'card_group' ? 'Cards' : type[0].toUpperCase() + type.slice(1));
@@ -258,10 +289,38 @@ export function mountPreviewPencils(
       }
     }
   }
+  if(insert)for(const section of sections.filter(section=>!section.hidden&&section.layout)){
+    const answerLeaves=section.layout!.rows.reduce((sum,row)=>sum+row.columns.reduce((sum,column)=>sum+column.elements.reduce((sum,element)=>sum+(element.items??[]).reduce((sum,item)=>sum+(item.grid?.rows??[]).reduce((sum,row)=>sum+row.columns.reduce((sum,column)=>sum+column.elements.length,0),0),0),0),0),0);
+    for(const outerRow of section.layout!.rows)for(const outerColumn of outerRow.columns)for(const accordion of outerColumn.elements)if(accordion.type==='accordion')for(const item of accordion.items??[]){
+      if(!item.grid)continue;
+      const parent={sectionId:section.id,rowId:outerRow.id,columnId:outerColumn.id,elementId:accordion.id};
+      for(const [ri,row]of item.grid.rows.entries()){
+        const rowTarget={...parent,accordion:{itemId:item.id,rowId:row.id}};
+        if(item.grid.rows.length<4)plus('Add row',`Add row after answer row ${ri+1}`,()=>boundsFor(rowTarget),rowTarget,'row',()=>insert({kind:'row',...rowTarget,afterId:row.id}));
+        for(const [ci,column]of row.columns.entries()){
+          const columnTarget={...parent,accordion:{itemId:item.id,rowId:row.id,columnId:column.id}};
+          if(row.columns.length<4)plus('Add column',`Add column after answer column ${ci+1}`,()=>boundsFor(columnTarget),columnTarget,'column',()=>insert({kind:'column',...rowTarget,afterId:column.id}));
+          if(column.elements.length>=10||answerLeaves>=120)continue;
+          const request={kind:'element',...columnTarget};
+          if(!column.elements.length)plus('Add element','Add element to empty answer column',()=>boundsFor(columnTarget),columnTarget,'empty',button=>showElements(button,{...request,afterId:null}),true);
+          for(const element of column.elements){const target={...parent,accordion:{...columnTarget.accordion,elementId:element.id}};plus('Add element','Add element below answer element',()=>boundsFor(target),target,'element',button=>showElements(button,{...request,afterId:element.id}));}
+        }
+      }
+    }
+  }
   const targetAt = (element: Element): PreviewTarget | null => {
     for (const section of sections.filter(item => !item.hidden)) {
       const root = targetFor(section.id, section.anchor);
       if (!root?.contains(element)) continue;
+      const answer=element.closest<HTMLElement>('[data-proof-accordion-item]');
+      if(answer&&root.contains(answer)){
+        const outer=answer.closest<HTMLElement>('[data-proof-element]');
+        const outerRow=outer?.closest<HTMLElement>('[data-proof-row]'),outerColumn=outer?.closest<HTMLElement>('[data-proof-column]');
+        const parent={sectionId:section.id,rowId:outerRow?.dataset.proofRow,columnId:outerColumn?.dataset.proofColumn,elementId:outer?.dataset.proofElement};
+        if(!answerLayoutsEnabled)return validTarget(parent);
+        const row=element.closest<HTMLElement>('[data-proof-row]'),column=element.closest<HTMLElement>('[data-proof-column]'),leaf=element.closest<HTMLElement>('[data-proof-element]');
+        return validTarget({...parent,accordion:{itemId:answer.dataset.proofAccordionItem,...(row&&answer.contains(row)?{rowId:row.dataset.proofRow}:{}),...(column&&answer.contains(column)?{columnId:column.dataset.proofColumn}:{}),...(leaf&&answer.contains(leaf)?{elementId:leaf.dataset.proofElement}:{})}})??validTarget(parent);
+      }
       const row = element.closest<HTMLElement>('[data-proof-row]');
       const column = element.closest<HTMLElement>('[data-proof-column]');
       const item = element.closest<HTMLElement>('[data-proof-element]');
@@ -282,7 +341,7 @@ export function mountPreviewPencils(
     if(event.target.closest('[data-proof-accordion-controls]')){event.stopPropagation();inline?.finish();closeMenu();const target=targetAt(event.target);if(target)activateTarget(target);return;}
     if(event.target.closest('[data-proof-sermon-controls]')){inline?.finish();closeMenu();return;}
     const descriptor=descriptors.find(item=>item.node.contains(event.target as Node));
-    if(inlineEnabled&&descriptor){
+    if(inlineEnabled&&descriptor&&(!descriptor.target.accordion||answerLayoutsEnabled)){
       event.preventDefault();event.stopPropagation();closeMenu();setSelected(descriptor.target);
       if(inline)inline.start(descriptor,event);else{pendingText=descriptor;const bounds=descriptor.node.getBoundingClientRect();loading.textContent='Loading text editor…';Object.assign(loading.style,{display:'block',left:`${Math.max(8,bounds.left)}px`,top:`${Math.max(8,bounds.top-36)}px`});}return;
     }
@@ -329,7 +388,7 @@ export function mountPreviewPencils(
     if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
     inlineEnabled=event.data.inlineEditing===true;
     textStylesEnabled=event.data.textSemanticStyles===true;
-    accordionEnabled=event.data.accordion===true;
+    accordionEnabled=event.data.accordion===true;answerLayoutsEnabled=event.data.accordionAnswerLayouts===true;
     mapEnabled=event.data.map===true;
     featuredEventsEnabled=event.data.featuredEvents===true;allEventsEnabled=event.data.allEvents===true;
     brandColors=event.data.brandColors;
@@ -337,7 +396,7 @@ export function mountPreviewPencils(
     const target = validTarget(event.data.target);
     if (target) setSelected(target);
   };
-  const matchesContext = (target: PreviewTarget | null, context: PreviewTarget | null) => !!target && !!context && target.sectionId === context.sectionId && (!target.rowId || target.rowId === context.rowId) && (!target.columnId || target.columnId === context.columnId) && (!target.elementId || target.elementId === context.elementId);
+  const matchesContext = (target: PreviewTarget | null, context: PreviewTarget | null) => !!target && !!context && target.sectionId === context.sectionId && (!target.rowId || target.rowId === context.rowId) && (!target.columnId || target.columnId === context.columnId) && (!target.elementId || target.elementId === context.elementId)&&(!target.accordion||!!context.accordion&&target.accordion.itemId===context.accordion.itemId&&(!target.accordion.rowId||target.accordion.rowId===context.accordion.rowId)&&(!target.accordion.columnId||target.accordion.columnId===context.accordion.columnId)&&(!target.accordion.elementId||target.accordion.elementId===context.accordion.elementId));
   const visibleBounds = (bounds?: DOMRect) => !!bounds && bounds.width > 0 && bounds.height > 0 && bounds.bottom > 0 && bounds.top < innerHeight && bounds.right > 0 && bounds.left < innerWidth;
   const placeHighlight = (highlight: HTMLDivElement, bounds?: DOMRect) => {
     highlight.style.display = visibleBounds(bounds) ? 'block' : 'none';
@@ -367,7 +426,7 @@ export function mountPreviewPencils(
     }
     for (const control of insertControls) {
       const bounds = control.bounds();
-      const relevant = !activeText && (control.always || matchesContext(control.target, hovered) || matchesContext(control.target, selected) || control === activeInsertion);
+      const relevant = (!control.target?.accordion || answerLayoutsEnabled) && !activeText && (control.always || matchesContext(control.target, hovered) || matchesContext(control.target, selected) || control === activeInsertion);
       let x = 0, y = 0;
       if (bounds) {
         y = control.placement === 'empty' || control.placement === 'column' ? (bounds.top + bounds.bottom) / 2 : bounds.bottom;
