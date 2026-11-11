@@ -1,0 +1,9 @@
+# Accordion answer layouts — November 11, 2026
+
+Adds canonical `2026-11-11.1` optional item.grid support to this client's existing renderer. Legacy body is retained unchanged and used when grid is absent. Answers allow one level of text/image/button/video/map/card-group leaves, up to4rows/4columns/10leaves per column and120answer leaves per outer layout. IDs remain globally unique. No child accordions or collection elements. Native styling, Screen navigation, responsive columns and private preview selection use the existing client paths.
+
+The portable inline asset SHA256 is `ca7f91e61a86d3bcb176a604f1c2db93bec1fae7011fcce2e49dc0c054aa069f`. StandOut also receives the compiled standalone pencil helper. Torch/Zeal adapters resolve nested Screen IDs; static StandOut dependency discovery traverses nested groups and Screen links. Link Page styles preserve nested columns/spacing rather than applying outer-only rules to every answer.
+
+Validation: 36 tests pass, including bounded answer rejection and actual native renderer photo/text/Screen-action/body-restoration cases. Typecheck and production build pass (StandOut uses build plus HTML/asset check). Desktop and390px browser fixtures used actual native SSR with final native layout CSS:40/60columns aligned on desktop, equal-width stacked columns on phones, no horizontal overflow, images loaded and no console warnings/errors. Four affected LinkPage stylesheet fixtures were independently checked after the column fix. These browser fixtures verify native HTML/CSS, not hydrated client Screen modal behavior; normal shared builder and genuine AI/crop acceptance are recorded in the shared repository. Temporary fixtures stayed outside this repository.
+
+No hosted client content, credentials, database, environment variables or publication changed. Source compatibility is not a deployed capability attestation. Planning owns exact frontend deployment verification before enabling accordionAnswerLayouts.

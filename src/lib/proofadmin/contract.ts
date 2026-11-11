@@ -1,3 +1,4 @@
+import {walkLayoutElements} from './layout-traversal';
 import {eventTagFilterSchema} from './event-tag-filter';
 import {rowHasEventElement} from './event-elements';
 import {sermonElementTypes,rowHasSermonElement} from './sermon-elements';
@@ -115,18 +116,30 @@ export const nativeSectionSchema = z.object({
   })).max(60),
   groups: z.array(z.object({key:id,label,id}).strict()).max(10),
 }).strict();
-export const accordionItemSchema = z.object({id,title:z.string().trim().min(1).max(200).refine(value=>!value.startsWith('richtext:v1:'),'Accordion titles must be plain text.'),body:text}).strict();
-export const layoutElementSchema = z.discriminatedUnion("type", [
+const answerElementSchemas = [
   z.object({id,type:z.literal('map'),address:z.string().trim().max(500).refine(value=>!value.startsWith('richtext:v1:')&&!/[\u0000-\u001f\u007f]/.test(value),'Use a plain address on one line.').default(''),height:z.number().int().min(160).max(800).default(320),showDirections:z.boolean().default(true),showAddress:z.boolean().optional(),directionsStyle:z.enum(['link','button']).optional()}).strict(),
-  z.object({id,type:z.literal("accordion"),labelStyle:z.enum(['default','heading']).optional(),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
- z.object({id,type:z.enum(sermonElementTypes)}).strict(),
-  z.object({id,type:z.literal('featured_events'),tagFilter:eventTagFilterSchema.optional(),count:z.number().int().min(1).max(12).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional(),viewAllAction:actionSchema.refine(action=>action.kind==='screen'||/^\/(?:[a-zA-Z0-9_-]+\/?)*$/.test(action.value),'Choose a same-site page or Screen.').optional()}).strict(),
-  z.object({id,type:z.literal('all_events'),tagFilter:eventTagFilterSchema.optional(),pageSize:z.number().int().min(1).max(24).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional()}).strict(),
   z.object({id,type:z.literal("video"),source:videoUrl, label:z.string().max(500).default("")}).strict(),
   z.object({id,type:z.literal("card_group"),groupId:z.string().max(100)}).strict(),
-  z.object({id, type:z.literal("text"), text,textStyle:z.enum(['body','eyebrow','heading','hero_heading']).optional(),mobileFontSize:z.number().int().min(12).max(96).optional()}).strict(),
+  z.object({id, type:z.literal("text"), text, textStyle:z.enum(["body","eyebrow","heading","hero_heading"]).optional(),mobileFontSize:z.number().int().min(12).max(96).optional()}).strict(),
   z.object({id, type:z.literal("image"), image:imageUrl, alt:z.string().max(500), fill:z.boolean().default(false), focalX:z.number().min(0).max(100).default(50), focalY:z.number().min(0).max(100).default(50)}).strict(),
   z.object({id, type:z.literal("button"), alignment:z.enum(["left","center","right"]).optional(), action:actionSchema}).strict(),
+] as const;
+export const accordionAnswerElementSchema=z.discriminatedUnion("type",answerElementSchemas);
+export const accordionAnswerLayoutSchema=z.object({
+ rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(),columns:z.array(z.object({id,elements:z.array(accordionAnswerElementSchema).max(10)}).strict()).min(1).max(4)}).strict()).min(1).max(4),
+ gap:z.number().int().min(0).max(80).default(24),padding:z.number().int().min(0).max(160).default(0),paddingX:z.number().int().min(0).max(160).optional(),paddingY:z.number().int().min(0).max(160).optional(),fullWidth:z.boolean().default(false),
+}).strict();
+export type AccordionAnswerLayout=z.infer<typeof accordionAnswerLayoutSchema>;
+export type AccordionAnswerElement=z.infer<typeof accordionAnswerElementSchema>;
+export const accordionItemSchema = z.object({
+ id,title:z.string().trim().min(1).max(200).refine(value=>!value.startsWith('richtext:v1:'),'Accordion titles must be plain text.'),body:text,grid:accordionAnswerLayoutSchema.optional(),
+}).strict();
+export const layoutElementSchema = z.discriminatedUnion("type", [
+ ...answerElementSchemas,
+  z.object({id,type:z.enum(sermonElementTypes)}).strict(),
+  z.object({id,type:z.literal('featured_events'),tagFilter:eventTagFilterSchema.optional(),count:z.number().int().min(1).max(12).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional(),viewAllAction:actionSchema.refine(action=>action.kind==='screen'||/^\/(?:[a-zA-Z0-9_-]+\/?)*$/.test(action.value),'Choose a same-site page or Screen.').optional()}).strict(),
+  z.object({id,type:z.literal('all_events'),tagFilter:eventTagFilterSchema.optional(),pageSize:z.number().int().min(1).max(24).optional(),order:z.enum(['soonest','latest']).optional(),emptyMessage:z.string().max(500).optional()}).strict(),
+ z.object({id,type:z.literal('accordion'),labelStyle:z.enum(['default','heading']).optional(),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
 ]);
 export const layoutSchema = z.object({
   rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(), columns:z.array(z.object({id, elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
@@ -136,9 +149,11 @@ export const layoutSchema = z.object({
   paddingY:z.number().int().min(0).max(160).optional(),
   fullWidth:z.boolean().default(false),
 }).strict().superRefine((layout,ctx)=>{
- layout.rows.forEach((row,index)=>{if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});});
+  for(const [index,row] of layout.rows.entries())if(row.columns.length!==1&&rowHasSermonElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Sermon elements require a single-column row.'});
   for(const [index,row] of layout.rows.entries())if(row.columns.length!==1&&rowHasEventElement(row))ctx.addIssue({code:'custom',path:['rows',index,'columns'],message:'Event collections require a single-column row.'});
-  const ids=layout.rows.flatMap(row=>[row.id,...row.columns.flatMap(column=>[column.id,...column.elements.flatMap(element=>[element.id,...(element.type==='accordion'?element.items.map(item=>item.id):[])])])]);
+  const ids:string[]=[];let answerLeaves=0;
+  for(const row of layout.rows){ids.push(row.id);for(const column of row.columns){ids.push(column.id);for(const element of column.elements){ids.push(element.id);if(element.type==='accordion')for(const item of element.items){ids.push(item.id);if(item.grid)for(const answerRow of item.grid.rows){ids.push(answerRow.id);for(const answerColumn of answerRow.columns){ids.push(answerColumn.id);for(const leaf of answerColumn.elements){ids.push(leaf.id);answerLeaves++;}}}}}}}
+  if(answerLeaves>120)ctx.addIssue({code:'custom',message:'Accordion answers may contain at most 120 elements across this layout.'});
   if(new Set(ids).size!==ids.length)ctx.addIssue({code:"custom",message:"Rows, columns, elements and accordion items must have unique IDs."});
 });
 export type SectionLayout = z.infer<typeof layoutSchema>;
@@ -379,7 +394,7 @@ export function references(
     content.cards.forEach((card) => action(card.action));
   if (content.kind === "screen")
     content.blocks.forEach((block) => {
-      block.grid?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
+      if(block.grid)for(const element of walkLayoutElements(block.grid)){if(element.type==='button')action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type==='card_group'&&element.groupId)result.push({id:element.groupId,kind:'card_group'});}
       if (block.type === "card_group")
         result.push({ id: block.groupId, kind: "card_group" });
       if (block.type === "button" || block.showAction || ["feature", "callout"].includes(block.type)) action(block.action);
@@ -389,7 +404,7 @@ export function references(
       section.native?.groups.forEach(group => result.push({id:group.id,kind:"card_group"}));
       if (section.type === "card_group")
         result.push({ id: section.groupId, kind: "card_group" });
-      section.layout?.rows.forEach(row=>row.columns.forEach(column=>column.elements.forEach(element=>{if(element.type === "button")action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type === "card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});})));
+      if(section.layout)for(const element of walkLayoutElements(section.layout)){if(element.type==="button")action(element.action);if(element.type==='featured_events'&&element.viewAllAction)action(element.viewAllAction);if(element.type==="card_group"&&element.groupId)result.push({id:element.groupId,kind:"card_group"});}
       section.buttons.forEach(action);
       section.items.forEach((item) => action(item.action));
     });
