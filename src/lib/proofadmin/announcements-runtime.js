@@ -1,7 +1,16 @@
+import {announcementTiming,nextAnnouncementBoundary} from './announcement-timing.js';
 const memorySeen=new Set();
 /** @param {HTMLElement | null} root */
 export function setupAnnouncements(root){
  if(!root)return ()=>{};
+ const scheduled=Array.from(root.querySelectorAll('[data-announcement-schedule]'));
+ let boundaryTimer;
+ const refreshSchedule=()=>{
+  clearTimeout(boundaryTimer);let next=Infinity;const now=Date.now();
+  for(const item of scheduled){const schedule={...(item.dataset.startsAt?{startsAt:item.dataset.startsAt}:{}),...(item.dataset.endsAt?{endsAt:item.dataset.endsAt}:{})};item.hidden=announcementTiming(true,schedule,now)!=='active';const boundary=nextAnnouncementBoundary(schedule,now);if(boundary!==null)next=Math.min(next,boundary);}
+  if(Number.isFinite(next))boundaryTimer=setTimeout(refreshSchedule,Math.min(2147483647,Math.max(1,next-now)));
+ };
+ refreshSchedule();document.addEventListener('visibilitychange',refreshSchedule);window.addEventListener?.('pageshow',refreshSchedule);
  const dialogs=Array.from(root.querySelectorAll('dialog[data-announcement-id]'));
  let active=null;let previousFocus=null;let stopped=false;
  const timers=[];
@@ -20,5 +29,5 @@ export function setupAnnouncements(root){
  root.addEventListener('click',click);dialogs.forEach(d=>d.addEventListener('close',onClose));
  timers.push(setTimeout(()=>open('auto'),1500));
  timers.push(setTimeout(()=>document.addEventListener('mouseout',exit),2000));
- return ()=>{stopped=true;timers.forEach(clearTimeout);document.removeEventListener('mouseout',exit);root.removeEventListener('click',click);dialogs.forEach(d=>d.removeEventListener('close',onClose));if(active?.open)active.close();};
+ return ()=>{stopped=true;clearTimeout(boundaryTimer);document.removeEventListener('visibilitychange',refreshSchedule);window.removeEventListener?.('pageshow',refreshSchedule);timers.forEach(clearTimeout);document.removeEventListener('mouseout',exit);root.removeEventListener('click',click);dialogs.forEach(d=>d.removeEventListener('close',onClose));if(active?.open)active.close();};
 }
