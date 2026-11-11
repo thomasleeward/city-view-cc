@@ -1,3 +1,5 @@
+import {proofAdminEnabled} from '@/lib/proofadmin/server';
+import {EventCollection} from '@/lib/proofadmin/event-collection';
 import {sharingMetadata} from '@/lib/proofadmin/sharing-server';
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/Button";
@@ -6,6 +8,7 @@ import { Section } from "@/components/site/Section";
 import { siteConfig } from "@/lib/config";
 
 export default function EventsPage() {
+  if(proofAdminEnabled())return <><PageHero eyebrow="Events" title="Upcoming events" description="Find your next gathering at City View."/><Section><EventCollection site="city-view" element={{type:'all_events'}}/></Section></>;
   // TODO: Replace this placeholder with Planning Center Events API or Church Center URL.
   if (siteConfig.external.events) {
     redirect(siteConfig.external.events);

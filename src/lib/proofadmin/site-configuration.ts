@@ -5,7 +5,12 @@ import {announcementsSchema,validateAnnouncementPublish} from './announcements-s
 import {safeUrl,type ContentRecord} from './contract';
 const short=z.string().max(300);
 const social=z.union([z.literal('#'),z.literal(''),z.url().refine(v=>v.startsWith('https://'),'Use an HTTPS social link.')]);
+export const eventSourceSettingsSchema=z.object({
+ mode:z.enum(['manual','planningcenter']),
+ timezone:z.string().max(100).refine(value=>{try{new Intl.DateTimeFormat('en',{timeZone:value});return true;}catch{return false;}},'Choose a valid time zone.'),
+}).strict();
 export const configurationSchema=z.object({
+ eventSource:eventSourceSettingsSchema.optional(),
  sermonSource:z.object({channelId:z.string().regex(/^\d{1,20}$/),channelName:z.string().min(1).max(200)}).strict().optional(),
  favicon:imageUrl.optional(),
  sharing:sharingSchema.optional(),
