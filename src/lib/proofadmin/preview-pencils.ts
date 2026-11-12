@@ -5,6 +5,7 @@ type PreviewDocument = {
   id: string;
   content: {
     kind: string;
+    linkPage?: unknown;
     sections?: { id: string; anchor?: string; name: string; hidden?: boolean; title?:string;body?:string;eyebrow?:string;buttons?:{label:string}[]; layout?: Layout }[];
     blocks?: { id: string; caption?: string; type: string; text?:string;action?:{label:string}; grid?: Layout }[];
     cards?: { id: string; title: string; description?:string;action?:{label:string};hidden?:boolean }[];
@@ -263,21 +264,22 @@ export function mountPreviewPencils(
     menu.querySelector('button')?.focus(); schedule();
   };
   const pageBounds = () => (document.querySelector<HTMLElement>('main') ?? document.body).getBoundingClientRect();
+  const linkPage = current.content.kind === 'page' && Boolean(current.content.linkPage);
   if (insert && ['page', 'screen'].includes(current.content.kind)) {
-    if (!sections.length) plus('Add section', 'Add first section', pageBounds, null, 'empty', () => insert({ kind: 'section', afterId: null }), true);
+    if (!linkPage && !sections.length) plus('Add section', 'Add first section', pageBounds, null, 'empty', () => insert({ kind: 'section', afterId: null }), true);
     for (const section of sections.filter(item => !item.hidden)) {
       const sectionTarget = { sectionId: section.id };
       const sectionBounds = () => boundsFor(sectionTarget);
-      if (sections.length < 40) plus('Add section', `Add section after ${labelText(section.name)}`, sectionBounds, sectionTarget, 'section', () => insert({ kind: 'section', afterId: section.id }), true);
+      if (!linkPage && sections.length < 40) plus('Add section', `Add section after ${labelText(section.name)}`, sectionBounds, sectionTarget, 'section', () => insert({ kind: 'section', afterId: section.id }), true);
       if (!section.layout) continue;
-      if (!section.layout.rows.length) plus('Add row', 'Add first row', sectionBounds, sectionTarget, 'empty', () => insert({ kind: 'row', sectionId: section.id, afterId: null }), true);
+      if (!linkPage && !section.layout.rows.length) plus('Add row', 'Add first row', sectionBounds, sectionTarget, 'empty', () => insert({ kind: 'row', sectionId: section.id, afterId: null }), true);
       for (const [rowIndex, row] of section.layout.rows.entries()) {
         const rowTarget = { ...sectionTarget, rowId: row.id };
-        if (section.layout.rows.length < 20) plus('Add row', `Add row after row ${rowIndex + 1}`, () => boundsFor(rowTarget), rowTarget, 'row', () => insert({ kind: 'row', sectionId: section.id, afterId: row.id }));
-        if (!row.columns.length) plus('Add column', 'Add first column', () => boundsFor(rowTarget), rowTarget, 'empty', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: null }), true);
+        if (!linkPage && section.layout.rows.length < 20) plus('Add row', `Add row after row ${rowIndex + 1}`, () => boundsFor(rowTarget), rowTarget, 'row', () => insert({ kind: 'row', sectionId: section.id, afterId: row.id }));
+        if (!linkPage && !row.columns.length) plus('Add column', 'Add first column', () => boundsFor(rowTarget), rowTarget, 'empty', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: null }), true);
         for (const [columnIndex, column] of row.columns.entries()) {
           const columnTarget = { ...rowTarget, columnId: column.id };
-          if (row.columns.length < 6&&!row.columns.some(column=>column.elements.some(element=>['recent_sermons','recent_series','all_sermons','all_series','featured_events','all_events'].includes(element.type??'')))) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
+          if (!linkPage && row.columns.length < 6&&!row.columns.some(column=>column.elements.some(element=>['recent_sermons','recent_series','all_sermons','all_series','featured_events','all_events'].includes(element.type??'')))) plus('Add column', `Add column after column ${columnIndex + 1}`, () => boundsFor(columnTarget), columnTarget, 'column', () => insert({ kind: 'column', sectionId: section.id, rowId: row.id, afterId: column.id }));
           if (column.elements.length >= 20) continue;
           const request = { kind: 'element', sectionId: section.id, rowId: row.id, columnId: column.id };
           if (!column.elements.length) plus('Add element', 'Add element to empty column', () => boundsFor(columnTarget), columnTarget, 'empty', button => showElements(button, { ...request, afterId: null }), true);
