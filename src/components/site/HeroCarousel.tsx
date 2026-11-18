@@ -1,4 +1,6 @@
-"use client";
+'use client';
+import {withSectionBackground,type BackgroundSection} from '@/lib/proofadmin/section-background-surface';
+
 import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 
 
@@ -9,27 +11,29 @@ import type { HeroContent, HeroSlide } from "@/lib/supabase/queries";
 import { cn } from "@/lib/utils";
 
 type HeroCarouselProps = {
+  backgroundSection?:BackgroundSection;
   content: HeroContent;
   slides: HeroSlide[];
 };
 
-export function HeroCarousel({ content, slides }: HeroCarouselProps) {
+export function HeroCarousel({ content, slides,backgroundSection }: HeroCarouselProps) {
+  const customBackground=Boolean(backgroundSection?.backgroundMedia);
   const [activeIndex, setActiveIndex] = useState(0);
   useEffect(() => {
-    if (slides.length < 2) return;
+    if (customBackground||slides.length < 2) return;
     const timer = window.setInterval(() => {
       setActiveIndex((index) => (index + 1) % slides.length);
     }, 7000);
 
     return () => window.clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length,customBackground]);
 
-  if (!slides.length) return null;
+  if (!slides.length&&!customBackground) return null;
 
-  return (
+  return withSectionBackground((
     <div className="relative min-h-[680px] overflow-hidden bg-ink text-white">
       <div className="absolute inset-0 bg-green" />
-      {slides.map((slide, index) => (
+      {!backgroundSection?.backgroundMedia&&slides.map((slide, index) => (
         <div
           key={slide.id}
           className={cn(
@@ -80,7 +84,7 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
             Watch Sermons
           </Button>
         </div>
-        {slides.length > 1 && (
+        {!backgroundSection?.backgroundMedia&&slides.length > 1 && (
           <div className="mt-10 flex gap-2">
             {slides.map((slide, index) => (
               <button
@@ -98,5 +102,5 @@ export function HeroCarousel({ content, slides }: HeroCarouselProps) {
         )}
       </div>
     </div>
-  );
+  ),backgroundSection??{appearance:{background:"transparent",overlay:"#000000",opacity:0}});
 }

@@ -1,4 +1,7 @@
 'use client';
+import {withSectionBackground} from './section-background-surface';
+import {sectionImageIsBackground} from './section-background';
+import {SectionBackground} from './section-background-view';
 import {screenBlockPresentation} from './screen-presentation';
 import './screen-presentation.css';
 import './screen-client.css';
@@ -33,13 +36,13 @@ export function Group({group}:{group:GroupContent}){
  </div>)}</div>;
 }
 function StandardSection({s,groups}:{s:Section;groups:Record<string,GroupContent>}){
- return <section className="py-16 sm:py-24" style={{background:s.appearance.background,color:s.appearance.text}}><BackgroundVideo source={s.appearance.video} poster={s.appearance.image||s.image} overlay={s.appearance.overlay} opacity={s.appearance.opacity}/><div className="mx-auto max-w-6xl px-5">
+ return withSectionBackground(<section className="py-16 sm:py-24" style={{background:s.appearance.background,color:s.appearance.text}}><BackgroundVideo source={s.appearance.video} poster={s.appearance.image||s.image} overlay={s.appearance.overlay} opacity={s.appearance.opacity}/><div className="mx-auto max-w-6xl px-5">
  {s.eyebrow&&<p className="mb-3 text-sm font-bold uppercase tracking-widest"><RichInline text={s.eyebrow}/></p>}
  <div className={['image_left','image_right','visit'].includes(s.type)?'grid items-center gap-8 md:grid-cols-2':''}>
- {s.image&&<div className={`relative mb-8 aspect-video ${s.type==='image_right'?'md:order-2':''}`}><Image src={s.image} alt={s.imageAlt} fill sizes="100vw" className="object-cover" style={{objectPosition:`${s.appearance.focalX}% ${s.appearance.focalY}%`}}/></div>}
+ {s.image&&!(s.backgroundMedia&&sectionImageIsBackground(s))&&<div className={`relative mb-8 aspect-video ${s.type==='image_right'?'md:order-2':''}`}><Image src={s.image} alt={s.imageAlt} fill sizes="100vw" className="object-cover" style={{objectPosition:`${s.appearance.focalX}% ${s.appearance.focalY}%`}}/></div>}
  <div><h2 className="font-display text-4xl font-bold"><RichInline text={s.title}/></h2><div className="mt-5 space-y-5 text-lg leading-8"><RichParagraphs text={s.body}/></div>{s.facts.length>0&&<ul>{s.facts.map((f,i)=><li key={i}><RichInline text={f}/></li>)}</ul>}<div className="mt-6 flex flex-wrap gap-3">{s.buttons.map((b,i)=><Button key={i} style={buttonColors(b)} href={href(b)}><RichInline links={false} text={b.label}/></Button>)}</div></div></div>
  {s.type==='card_group'&&groups[s.groupId]&&<Group group={groups[s.groupId]}/>}
- </div></section>;
+ </div></section>,s,[BackgroundVideo]);
 }
 export function Screen({content,groups,close}:{content:ScreenContent;groups:Record<string,GroupContent>;close:()=>void}){
  const header=screenBlockPresentation(undefined,content.appearance);
@@ -62,7 +65,7 @@ function WebsiteContent({documents,content,configuration,frame=true,sermons}:{do
  if(content.kind==='page'&&content.linkPage)return <LinkPageView page={content} groups={groups} logo="/cityviewlogo.png" name={configuration.settings.church_name} href={href}/>;
  return <div onClickCapture={e=>{const link=(e.target as HTMLElement).closest('a');const target=link?.getAttribute('href');if(target?.startsWith('#proof-screen-')){e.preventDefault();setOpened(target.slice('#proof-screen-'.length));}}}>
  {frame&&<Header configuration={configuration}/>}
- <main>{content.kind==='page'?content.sections.filter(s=>!s.hidden).map(s=><div key={s.id} id={s.anchor??s.id} data-proof-item={s.id}>{s.layout?<SectionLayoutView groups={groups} layout={s.layout} accent={s.appearance.accent} background={s.appearance.background} color={s.appearance.text} href={href}/>:s.native?<NativeSection s={s} groups={groups} configuration={configuration}/>:<StandardSection s={s} groups={groups}/>}</div>):content.kind==='card_group'?<SiteSection><Group group={content}/></SiteSection>:<Screen content={content} groups={groups} close={()=>setOpened(null)}/>}</main>
+ <main>{content.kind==='page'?content.sections.filter(s=>!s.hidden).map(s=><div key={s.id} id={s.anchor??s.id} data-proof-item={s.id}>{s.layout?<SectionLayoutView groups={groups} layout={s.layout} backgroundMedia={s.backgroundMedia} backgroundOverlay={s.appearance.overlay} backgroundOpacity={s.appearance.opacity} accent={s.appearance.accent} background={s.appearance.background} color={s.appearance.text} href={href}/>:s.native?<NativeSection s={s} groups={groups} configuration={configuration}/>:<StandardSection s={s} groups={groups}/>}</div>):content.kind==='card_group'?<SiteSection><Group group={content}/></SiteSection>:<Screen content={content} groups={groups} close={()=>setOpened(null)}/>}</main>
  {frame&&<Footer configuration={configuration}/>}
  {screen?.kind==='screen'&&<Screen content={screen} groups={groups} close={()=>setOpened(null)}/>}
  </div>;
