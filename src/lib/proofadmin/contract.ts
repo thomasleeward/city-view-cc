@@ -1,3 +1,4 @@
+import {timedRedirectSchema} from './timed-redirect';
 import {sectionBackgroundSchema} from './section-background';
 import {walkLayoutElements} from './layout-traversal';
 import {eventTagFilterSchema} from './event-tag-filter';
@@ -253,6 +254,7 @@ export const contentSchema = z
       ...common,
       kind: z.literal("page"),
       sharing: sharingSchema.optional(),
+      timedRedirect:timedRedirectSchema.optional(),
       blogPost: z.object({author:z.string().trim().max(160),categories:z.array(z.string().trim().min(1).max(80)).max(12),date:z.iso.date(),excerpt:z.string().max(600),image:imageUrl, imageAlt:z.string().max(300),body:text}).strict().optional(),
       linkPage: z.object({logo: imageUrl.default(""),logoAlt:z.string().max(200).default("")}).optional(),
       description: z.string().max(2000).optional(),
@@ -291,6 +293,7 @@ export const contentSchema = z
         message: "Items must have unique identifiers.",
       });
     if (content.kind === "page") {
+      if(content.timedRedirect&&(content.linkPage||content.blogPost))ctx.addIssue({code:'custom',path:['timedRedirect'],message:'Timed redirects are available on ordinary Pages only.'});
       if(content.linkPage&&(content.group||content.slug==="home"||content.sections.length!==1||content.sections[0].hidden||!content.sections[0].layout||content.sections[0].layout.rows.length!==1||content.sections[0].layout.rows[0].columns.length!==1))ctx.addIssue({code:"custom",message:"Invalid Link Page layout."});
       const anchors = content.sections.map(s => s.anchor ?? s.id);
       if (new Set(anchors).size !== anchors.length) ctx.addIssue({ code: "custom", message: "Section links must be unique within a page." });
@@ -387,8 +390,9 @@ export const sectionLabels: Record<Section["type"], string> = {
 };
 export function references(
   content: Content,
-): { id: string; kind: "screen" | "card_group" }[] {
-  const result: { id: string; kind: "screen" | "card_group" }[] = [];
+): { id: string; kind: "screen" | "card_group" | "page" }[] {
+  const result: { id: string; kind: "screen" | "card_group" | "page" }[] = [];
+  if(content.kind==='page'&&content.timedRedirect?.enabled&&content.timedRedirect.destination.kind==='page'&&content.timedRedirect.destination.value)result.push({id:content.timedRedirect.destination.value,kind:'page'});
   const action = (a: ContentAction) => {
     if (a.kind === "screen") result.push({ id: a.value, kind: "screen" });
   };

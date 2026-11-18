@@ -48,6 +48,7 @@ export function parsePreviewMessage(
     }
     const allowed = new Set<string>();
     const visit = (content: Content) => { for (const ref of references(content)) {
+      if(ref.kind==='page')continue;
       if (allowed.has(ref.id) || ref.id === id) continue;
       allowed.add(ref.id); const target = related!.find(r => r.id === ref.id);
       if (target) visit(target.content);
@@ -127,6 +128,7 @@ export function previewDependencies(id: string, content: Content, records: Conte
   const result: { id: string; content: Content }[] = [];
   const visited = new Set([id]);
   const visit = (document: Content) => { for (const ref of references(document)) {
+    if(ref.kind==='page')continue;
     if (visited.has(ref.id)) continue;
     visited.add(ref.id);
     const target = records.find(r => r.id === ref.id && !r.archived && r.draft.kind === ref.kind);

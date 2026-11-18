@@ -1,4 +1,6 @@
 'use client';
+import {TimedRedirect} from './timed-redirect-view';
+import {resolveTimedRedirect} from './timed-redirect';
 import {withSectionBackground} from './section-background-surface';
 import {sectionImageIsBackground} from './section-background';
 import {SectionBackground} from './section-background-view';
@@ -57,7 +59,7 @@ export function Screen({content,groups,close}:{content:ScreenContent;groups:Reco
   </div></div>;
  })}</div></div>;
 }
-export function Website(props:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){return <><TypographyStyles typography={props.configuration.typography}/><WebsiteContent {...props}/></>;}
+export function Website(props:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[];publishedMode?:boolean}){const redirect=props.publishedMode&&props.content.kind==='page'?resolveTimedRedirect(props.documents.find(d=>d.content===props.content)?.id??'',props.content,props.documents):null;return <>{redirect&&<TimedRedirect {...redirect} publishedMode/>}<TypographyStyles typography={props.configuration.typography}/><WebsiteContent {...props}/></>;}
 function WebsiteContent({documents,content,configuration,frame=true,sermons}:{documents:Document[];content:Content;configuration:SiteConfiguration;frame?:boolean;sermons?:PublishedSermon[]}){
  const [opened,setOpened]=useState<string|null>(null);
  const groups=Object.fromEntries(documents.flatMap(d=>d.content.kind==='card_group'?[[d.id,sermons&&d.content.presentation==='series'?withSermons(d.content,sermons):d.content]]:[])) as Record<string,GroupContent>;

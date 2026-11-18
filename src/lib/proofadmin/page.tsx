@@ -6,5 +6,5 @@ export async function SharedPage({slug}:{slug:string}){
  const {documents,configuration,sermons}=await sharedContent();
  const page=documents.find(d=>d.content.kind==='page'&&pageKey(d.content)===slug);
  if(!page)notFound();
- return <Website sermons={sermons} frame={false} documents={documents} content={page.content} configuration={configuration}/>;
+ return <Website publishedMode sermons={sermons} frame={false} documents={documents} content={page.content} configuration={configuration}/>;
 }
