@@ -127,8 +127,13 @@ const answerElementSchemas = [
   z.object({id, type:z.literal("button"), alignment:z.enum(["left","center","right"]).optional(), action:actionSchema}).strict(),
 ] as const;
 export const accordionAnswerElementSchema=z.discriminatedUnion("type",answerElementSchemas);
+const spacingPixel=z.number().int().min(0).max(240).optional();
+const rowSpacingValues={above:spacingPixel,below:spacingPixel,gap:spacingPixel,inset:spacingPixel};
+const columnPaddingValues={top:spacingPixel,right:spacingPixel,bottom:spacingPixel,left:spacingPixel};
+export const rowSpacingSchema=z.object({...rowSpacingValues,mobile:z.object(rowSpacingValues).strict().optional()}).strict();
+export const columnPaddingSchema=z.object({...columnPaddingValues,mobile:z.object(columnPaddingValues).strict().optional(),alignToSectionEdge:z.boolean().optional(),mobileAlignToSectionEdge:z.boolean().optional()}).strict();
 export const accordionAnswerLayoutSchema=z.object({
- rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(),columns:z.array(z.object({id,elements:z.array(accordionAnswerElementSchema).max(10)}).strict()).min(1).max(4)}).strict()).min(1).max(4),
+ rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(),spacing:rowSpacingSchema.optional(),columns:z.array(z.object({id,padding:columnPaddingSchema.optional(),elements:z.array(accordionAnswerElementSchema).max(10)}).strict()).min(1).max(4)}).strict()).min(1).max(4),
  gap:z.number().int().min(0).max(80).default(24),padding:z.number().int().min(0).max(160).default(0),paddingX:z.number().int().min(0).max(160).optional(),paddingY:z.number().int().min(0).max(160).optional(),fullWidth:z.boolean().default(false),
 }).strict();
 export type AccordionAnswerLayout=z.infer<typeof accordionAnswerLayoutSchema>;
@@ -144,7 +149,7 @@ export const layoutElementSchema = z.discriminatedUnion("type", [
  z.object({id,type:z.literal('accordion'),labelStyle:z.enum(['default','heading']).optional(),items:z.array(accordionItemSchema).min(1).max(20),allowMultiple:z.boolean().default(false),openFirst:z.boolean().default(false)}).strict(),
 ]);
 export const layoutSchema = z.object({
-  rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(), columns:z.array(z.object({id, elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
+  rows:z.array(z.object({id,columnWidths:z.enum(['50-50','40-60','60-40','33-67','67-33']).optional(),verticalAlign:z.enum(['top','center','bottom']).optional(),spacing:rowSpacingSchema.optional(), columns:z.array(z.object({id,padding:columnPaddingSchema.optional(), elements:z.array(layoutElementSchema).max(20)}).strict()).min(1).max(6)}).strict()).min(1).max(20),
   gap:z.number().int().min(0).max(80).default(24),
   padding:z.number().int().min(0).max(160).default(48),
   paddingX:z.number().int().min(0).max(160).optional(),
