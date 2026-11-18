@@ -1,3 +1,4 @@
+import {sectionBackgroundSchema} from './section-background';
 import {walkLayoutElements} from './layout-traversal';
 import {eventTagFilterSchema} from './event-tag-filter';
 import {rowHasEventElement} from './event-elements';
@@ -193,6 +194,7 @@ export const blockSchema = z.object({
 }).superRefine((block,ctx)=>{if(block.type==='layout'&&!block.grid)ctx.addIssue({code:'custom',message:'A layout section needs rows and columns.'});if(block.grid&&block.type!=='layout')ctx.addIssue({code:'custom',message:'Rows and columns require a layout section.'});});
 
 export const sectionSchema = z.object({
+  backgroundMedia:sectionBackgroundSchema.optional(),
   layout: layoutSchema.optional(),
   native: nativeSectionSchema.optional(),
   id,
