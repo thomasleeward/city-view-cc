@@ -1,3 +1,5 @@
+import {cloneElement,isValidElement,type ReactNode} from 'react';
+import {withSectionBackground} from './section-background-surface';
 import Image from 'next/image';
 import {Button} from '@/components/ui/Button';
 import {HomeHero} from '@/components/site/HomeHero';
@@ -31,8 +33,8 @@ export function NativeSection({s,groups,configuration}:{s:CmsSection;groups:Reco
  const serveTeams=cards('serve-teams').map(c=>c.title);
  const connectHref=siteConfig.external.events,prayerHref=siteConfig.external.prayerRequest||`mailto:${siteConfig.email}`;
  switch(s.native?.template){
-case 'city-view-home-0': return (<HomeHero content={{eyebrow:field(s,'eyebrow'),headline:field(s,'headline'),subheadline:field(s,'subheadline'),ctaLabel:field(s,'ctaLabel'),ctaHref:field(s,'ctaHref')}} slides={slides} />);
-case 'city-view-home-1': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+case 'city-view-home-0': return nativeBackground((<HomeHero content={{eyebrow:field(s,'eyebrow'),headline:field(s,'headline'),subheadline:field(s,'subheadline'),ctaLabel:field(s,'ctaLabel'),ctaHref:field(s,'ctaHref')}} slides={slides} />),s);
+case 'city-view-home-1': return nativeBackground((<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
           <div className="space-y-5 text-lg leading-8 text-muted">
             <p><RichInline text={field(s,'field-2')}/></p>
@@ -55,8 +57,8 @@ case 'city-view-home-1': return (<Section className="bg-white" title={field(s,'f
               <RichInline text={field(s,'field-7')}/></Button>
           </div>
         </div>
-      </Section>);
-case 'city-view-home-2': return (<Section
+      </Section>),s);
+case 'city-view-home-2': return nativeBackground((<Section
         eyebrow={field(s,'field-0')}
         title={field(s,'field-1')}
         description={field(s,'field-2')}
@@ -90,8 +92,8 @@ case 'city-view-home-2': return (<Section
             </article>
           ))}
         </div>
-      </Section>);
-case 'city-view-home-3': return (<Section className="bg-green text-white">
+      </Section>),s);
+case 'city-view-home-3': return nativeBackground((<Section className="bg-green text-white">
         <div className="mb-10 max-w-4xl">
           <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
             <RichInline text={field(s,'field-0')}/></p>
@@ -107,16 +109,16 @@ case 'city-view-home-3': return (<Section className="bg-green text-white">
         </div>
         <Button href={field(s,'field-3')} variant="light" className="mt-8">
           <RichInline text={field(s,'field-4')}/></Button>
-      </Section>);
-case 'city-view-home-4': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-home-4': return nativeBackground((<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-8 md:grid-cols-[1fr_auto] md:items-center">
           <p className="max-w-3xl text-lg leading-8 text-muted">
             <RichInline text={field(s,'field-2')}/></p>
           <Button href={field(s,'field-3')} variant="secondary">
             <RichInline text={field(s,'field-4')}/></Button>
         </div>
-      </Section>);
-case 'city-view-home-5': return (<section className="bg-[#ee5f01] py-12 text-white sm:py-16">
+      </Section>),s);
+case 'city-view-home-5': return nativeBackground((<section className="bg-[#ee5f01] py-12 text-white sm:py-16">
         <div className="mx-auto grid max-w-6xl gap-8 px-5 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <p className="text-sm font-bold uppercase tracking-[0.18em] text-white/80">
@@ -133,13 +135,13 @@ case 'city-view-home-5': return (<section className="bg-[#ee5f01] py-12 text-whi
           >
             <RichInline text={field(s,'field-4')}/></Button>
         </div>
-      </section>);
-case 'city-view-about-0': return (<PageHero
+      </section>),s);
+case 'city-view-about-0': return nativeBackground((<PageHero
         eyebrow={field(s,'field-0')}
         title={field(s,'field-1')}
         description={field(s,'field-2')}
-      />);
-case 'city-view-about-1': return (<Section title={field(s,'field-0')}>
+      />),s);
+case 'city-view-about-1': return nativeBackground((<Section title={field(s,'field-0')}>
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div className="relative aspect-video overflow-hidden rounded-lg">
             <Image
@@ -156,8 +158,8 @@ case 'city-view-about-1': return (<Section title={field(s,'field-0')}>
               <RichInline text={field(s,'field-3')}/></p>
           </div>
         </div>
-      </Section>);
-case 'city-view-about-2': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-about-2': return nativeBackground((<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <article className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div className="relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-full">
             <Image
@@ -223,16 +225,16 @@ case 'city-view-about-2': return (<Section className="bg-white" title={field(s,'
             </article>
           ))}
         </div>
-      </Section>);
-case 'city-view-about-3': return (<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-about-3': return nativeBackground((<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <StatementOfFaith intro={field(s,'field-2')} statements={beliefStatements} />
-      </Section>);
-case 'city-view-get-connected-0': return (<PageHero
+      </Section>),s);
+case 'city-view-get-connected-0': return nativeBackground((<PageHero
         eyebrow={field(s,'field-0')}
         title={field(s,'field-1')}
         description={field(s,'field-2')}
-      />);
-case 'city-view-get-connected-1': return (<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      />),s);
+case 'city-view-get-connected-1': return nativeBackground((<Section className="bg-white" title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-6 md:grid-cols-2">
           {discoverPurposeCards.map((card) => (
             <article key={card.title} className="rounded-lg bg-cream p-5">
@@ -255,8 +257,8 @@ case 'city-view-get-connected-1': return (<Section className="bg-white" title={f
             </article>
           ))}
         </div>
-      </Section>);
-case 'city-view-get-connected-2': return (<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-get-connected-2': return nativeBackground((<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-stretch">
           <div className="mx-auto w-full max-w-md overflow-hidden rounded-lg lg:max-w-none">
             <Image
@@ -287,8 +289,8 @@ case 'city-view-get-connected-2': return (<Section title={field(s,'field-0')} ey
               <RichInline text={field(s,'field-9')}/></Button>
           </article>
         </div>
-      </Section>);
-case 'city-view-get-connected-3': return (<Section className="bg-green text-white">
+      </Section>),s);
+case 'city-view-get-connected-3': return nativeBackground((<Section className="bg-green text-white">
         <div className="mb-10 max-w-3xl">
           <p className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-gold">
             <RichInline text={field(s,'field-0')}/></p>
@@ -304,8 +306,8 @@ case 'city-view-get-connected-3': return (<Section className="bg-green text-whit
         </div>
         <Button href={connectHref} variant="light" className="mt-8">
           <RichInline text={field(s,'field-2')}/></Button>
-      </Section>);
-case 'city-view-get-connected-4': return (<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-get-connected-4': return nativeBackground((<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <div className="grid gap-6">
           <article className="rounded-lg bg-white p-6 shadow-sm sm:p-8">
             <div className="mx-auto max-w-5xl text-left">
@@ -348,19 +350,19 @@ case 'city-view-get-connected-4': return (<Section title={field(s,'field-0')} ey
             </article>
           </div>
         </div>
-      </Section>);
-case 'city-view-get-connected-5': return (<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
+      </Section>),s);
+case 'city-view-get-connected-5': return nativeBackground((<Section title={field(s,'field-0')} eyebrow={field(s,'field-1')}>
         <p className="max-w-3xl text-lg leading-8 text-muted">
           <RichInline text={field(s,'field-2')}/></p>
         <Button href={prayerHref} className="mt-6">
           <RichInline text={field(s,'field-3')}/></Button>
-      </Section>);
-case 'city-view-sermon-archive-0': return (<PageHero
+      </Section>),s);
+case 'city-view-sermon-archive-0': return nativeBackground((<PageHero
         eyebrow={field(s,'field-0')}
         title={field(s,'field-1')}
         description={field(s,'field-2')}
-      />);
-case 'city-view-sermon-archive-1': return (<Section>
+      />),s);
+case 'city-view-sermon-archive-1': return nativeBackground((<Section>
         {latest && (
           <div className="mb-12 grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <YouTubePlaylistEmbed
@@ -383,7 +385,9 @@ case 'city-view-sermon-archive-1': return (<Section>
             <SermonSeriesCard key={item.id} series={item} />
           ))}
         </div>
-      </Section>);
-default: return null;
+      </Section>),s);
+default: return nativeBackground(null,s);
 }
 }
+
+function nativeBackground(node:ReactNode,s:CmsSection):ReactNode{if(!s.backgroundMedia||!isValidElement(node))return node;return typeof node.type==='string'?withSectionBackground(node,s):cloneElement(node as React.ReactElement<{backgroundSection?:CmsSection}>,{backgroundSection:s});}

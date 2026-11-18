@@ -1,8 +1,10 @@
+import {withSectionBackground,type BackgroundSection} from '@/lib/proofadmin/section-background-surface';
 
 import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 import { cn } from "@/lib/utils";
 
 type SectionProps = {
+  backgroundSection?:BackgroundSection;
   eyebrow?: string;
   title?: string;
   description?: string;
@@ -11,7 +13,7 @@ type SectionProps = {
   innerClassName?: string;
 };
 
-export function Section({
+export function Section({backgroundSection,
   eyebrow,
   title,
   description,
@@ -19,7 +21,7 @@ export function Section({
   className,
   innerClassName,
 }: SectionProps) {
-  return (
+  return withSectionBackground((
     <section className={cn("py-16 sm:py-24", className)}>
       <div className={cn("mx-auto w-full max-w-6xl px-5", innerClassName)}>
         {(eyebrow || title || description) && (
@@ -42,5 +44,5 @@ export function Section({
         {children}
       </div>
     </section>
-  );
+  ),backgroundSection??{appearance:{background:"transparent",overlay:"#000000",opacity:0}});
 }

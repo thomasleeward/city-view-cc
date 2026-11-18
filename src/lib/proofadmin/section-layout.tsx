@@ -1,3 +1,5 @@
+import {withSectionBackground} from './section-background-surface';
+import type {SectionBackgroundMedia} from './section-background';
 import {EventCollection} from './event-collection';
 import {isEventLayoutElement} from './event-elements';
 import {layoutButtonColors,hasButtonAppearance} from './button-colors';
@@ -12,10 +14,10 @@ import type {CSSProperties} from 'react';
 import {RichInline} from './rich-text';
 import type {SectionLayout,ContentAction,GroupContent} from './contract';
 import './section-layout.css';
-type Props={layout:SectionLayout;background:string;color:string;accent?:string;id?:string;order?:number;groups?:Record<string,GroupContent>;onScreen?:(value:string)=>void;href?:(action:ContentAction)=>string};
-export function SectionLayoutView({layout,background,color,accent,id,order,groups={},onScreen,href=(action)=>action.kind==='screen'?`/?screen=${encodeURIComponent(action.value)}`:action.value}:Props) {
+type Props={backgroundMedia?:SectionBackgroundMedia;backgroundOverlay?:string;backgroundOpacity?:number;layout:SectionLayout;background:string;color:string;accent?:string;id?:string;order?:number;groups?:Record<string,GroupContent>;onScreen?:(value:string)=>void;href?:(action:ContentAction)=>string};
+export function SectionLayoutView({backgroundMedia,backgroundOverlay="#000000",backgroundOpacity=0,layout,background,color,accent,id,order,groups={},onScreen,href=(action)=>action.kind==='screen'?`/?screen=${encodeURIComponent(action.value)}`:action.value}:Props) {
  const actionLink=(action:ContentAction,surface?:{background:string;text:string})=><a className="proof-layout-button" href={href(action)} style={hasButtonAppearance(action)?layoutButtonColors(action,surface?.background??background,surface?.text??color):{background:action.colors?.background??color,color:action.colors?.text??background}} onClick={onScreen&&action.kind==='screen'?event=>{event.preventDefault();onScreen(action.value);}:undefined}><RichInline links={false} text={action.label}/></a>;
- return <section id={id} data-proof-layout data-proof-padding-axes={layout.paddingX!==undefined||layout.paddingY!==undefined?true:undefined} style={{background,color,order,...layoutPadding(layout),'--proof-section-accent':accent??color} as CSSProperties}><div className="proof-layout" style={{maxWidth:layout.fullWidth?'none':1200,gap:layout.gap}}>
+ return withSectionBackground(<section id={id} data-proof-layout data-proof-padding-axes={layout.paddingX!==undefined||layout.paddingY!==undefined?true:undefined} style={{background,color,order,...layoutPadding(layout),'--proof-section-accent':accent??color} as CSSProperties}><div className="proof-layout" style={{maxWidth:layout.fullWidth?'none':1200,gap:layout.gap}}>
   {layout.rows.map(row=><div className="proof-layout-row" data-proof-row={row.id} key={row.id} style={{'--proof-columns':row.columns.length,...rowPresentation(row),gap:layout.gap} as CSSProperties}>
    {row.columns.map(column=><div key={column.id} data-proof-column={column.id} className={`proof-layout-column ${column.elements.some(e=>e.type==='image'&&e.fill&&e.image)?'proof-layout-image-column':''}`} style={{gap:layout.gap,...columnPresentation(row)}}>
     {column.elements.map(element=><div className={`proof-layout-element ${element.type==='image'&&element.fill&&element.image?'proof-layout-fill-element':''}`} data-proof-element={element.id} key={element.id} style={element.type==='button'?{textAlign:element.alignment??'left'}:undefined}>
@@ -23,5 +25,5 @@ export function SectionLayoutView({layout,background,color,accent,id,order,group
     </div>)}
    </div>)}
   </div>)}
- </div></section>;
+ </div></section>,{backgroundMedia,appearance:{background,overlay:backgroundOverlay,opacity:backgroundOpacity}});
 }

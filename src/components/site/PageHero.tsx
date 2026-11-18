@@ -1,16 +1,18 @@
+import {withSectionBackground,type BackgroundSection} from '@/lib/proofadmin/section-background-surface';
 
 import {RichInline,richPlainText} from "@/lib/proofadmin/rich-text";
 import { cn } from "@/lib/utils";
 
 type PageHeroProps = {
+  backgroundSection?:BackgroundSection;
   eyebrow?: string;
   title: string;
   description?: string;
   className?: string;
 };
 
-export function PageHero({ eyebrow, title, description, className }: PageHeroProps) {
-  return (
+export function PageHero({backgroundSection, eyebrow, title, description, className }: PageHeroProps) {
+  return withSectionBackground((
     <section className={cn("bg-green py-16 text-white sm:py-24", className)}>
       <div className="mx-auto max-w-6xl px-5">
         {eyebrow && (
@@ -28,5 +30,5 @@ export function PageHero({ eyebrow, title, description, className }: PageHeroPro
         )}
       </div>
     </section>
-  );
+  ),backgroundSection??{appearance:{background:"transparent",overlay:"#000000",opacity:0}});
 }
