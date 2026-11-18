@@ -1,3 +1,4 @@
+import {parseSpacingProbe,type SpacingProbe,type SpacingMetrics} from './preview-spacing';
 // Only mounted by authenticated draft preview shells. Public renderers never call this.
 type PreviewElement={id:string;type?:string;text?:string;textStyle?:'body'|'eyebrow'|'heading'|'hero_heading';action?:{label:string};items?:{id:string;title:string;body:string;grid?:Layout}[]};
 type Layout={rows:{id:string;columns:{id:string;elements:PreviewElement[]}[]}[]};
@@ -13,6 +14,15 @@ type PreviewDocument = {
 };
 export type PreviewTarget = { sectionId: string; rowId?: string; columnId?: string; elementId?: string;accordion?:{itemId:string;rowId?:string;columnId?:string;elementId?:string} };
 export type PreviewBounds = { x: number; y: number; width: number; height: number };
+/** Labels never overlap the selected box; omit one when neither outside edge is visible. */
+export function spacingLabelPosition(bounds:{left:number;top:number;bottom:number},width:number,height:number,viewportWidth:number,viewportHeight:number,reserveOutside=0){
+  const left=Math.max(4,Math.min(bounds.left+4,viewportWidth-width-4));
+  const above=bounds.top-height-4-reserveOutside;
+  if(above>=4)return {left,top:above};
+  const below=bounds.bottom+4+reserveOutside;
+  return below+height<=viewportHeight-4?{left,top:below}:null;
+}
+
 type Focus = (target: PreviewTarget | null, bounds: PreviewBounds | null, action: 'select' | 'position' | 'dismiss' | 'insert-menu') => void;
 const rememberedSelection = new Map<string, PreviewTarget>();
 // Referrers are intentionally suppressed by the admin. Trust explicit origins and the source window.
@@ -128,6 +138,29 @@ export function mountPreviewPencils(
   };
   const selectionHighlight = makeHighlight();
   selectionHighlight.dataset.proofSelectionOutline = 'true';
+  const selectionTab=document.createElement('span');selectionTab.setAttribute('aria-hidden','true');Object.assign(selectionTab.style,{position:'absolute',display:'none',padding:'2px 7px',font:'600 11px/16px system-ui',color:'#fff',background:'#2473bb',borderRadius:'4px 4px 0 0'});layer.append(selectionTab);
+  const tint=document.createElement('div');tint.dataset.proofSpacingTint='true';Object.assign(tint.style,{position:'absolute',inset:'0',pointerEvents:'none'});layer.append(tint);
+  let spacingEnabled=false,spacingProbe:{target:PreviewTarget;probe:SpacingProbe}|null=null,lastSpacingMetrics='';
+  const clearSpacing=()=>{spacingProbe=null;tint.replaceChildren();};
+  const px=(value:string)=>Math.max(0,Math.min(10000,Number.parseFloat(value)||0));
+  const drawSpacing=()=>{
+    tint.replaceChildren();if(!spacingEnabled)return;
+    const target=spacingProbe?.target??selected,coords=target?.accordion??target;if(!target||!coords?.rowId||coords.elementId)return;
+    const node=nodeFor(target);if(!node)return;const bounds=node.getBoundingClientRect();if(!visibleBounds(bounds))return;
+    const directColumns=Array.from(node.querySelectorAll<HTMLElement>('[data-proof-column]')).filter(column=>column.closest('[data-proof-row]')===node),stacked=directColumns.length>1&&directColumns[1].getBoundingClientRect().top>=directColumns[0].getBoundingClientRect().bottom;
+    const style=getComputedStyle(node),metrics:SpacingMetrics={padding:{top:px(style.paddingTop),right:px(style.paddingRight),bottom:px(style.paddingBottom),left:px(style.paddingLeft)},above:px(style.marginTop),below:px(style.marginBottom),gap:px(stacked?style.rowGap:style.columnGap)};
+    const probe=spacingProbe?.probe??{rowId:coords.rowId,...(coords.columnId?{columnId:coords.columnId}:{}),region:'padding' as const};
+    const signature=JSON.stringify([target,probe,metrics]);if(signature!==lastSpacingMetrics){lastSpacingMetrics=signature;window.parent.postMessage({type:'proofadmin-preview-spacing-metrics',protocol:1,siteId,id:current.id,target,probe,metrics},parentOrigin);}
+    if(!spacingProbe)return;
+    const stripe=(x:number,y:number,width:number,height:number)=>{if(width<=0||height<=0)return;const piece=document.createElement('div');Object.assign(piece.style,{position:'absolute',left:`${x}px`,top:`${y}px`,width:`${width}px`,height:`${height}px`,background:'#6fbf8d44',border:'1px solid #56a87966',boxSizing:'border-box'});tint.append(piece);};
+    const pad=metrics.padding;let text='';
+    if(probe.region==='above'||probe.region==='below'){const value=metrics[probe.region];stripe(bounds.x,probe.region==='above'?bounds.y-value:bounds.bottom,bounds.width,value);text=`${probe.region==='above'?'Space above':'Space below'} ${value}px`;}
+    else if(probe.region==='gap'){const columns=directColumns;for(let i=1;i<columns.length;i++){const a=columns[i-1].getBoundingClientRect(),b=columns[i].getBoundingClientRect();if(b.top>=a.bottom)stripe(Math.max(a.left,b.left),a.bottom,Math.min(a.width,b.width),b.top-a.bottom);else stripe(a.right,Math.max(a.top,b.top),Math.max(0,b.left-a.right),Math.min(a.height,b.height));}text=`Column gap ${metrics.gap}px`;}
+    else{if(probe.region==='padding'){stripe(bounds.x,bounds.y,bounds.width,Math.min(pad.top,bounds.height));stripe(bounds.x,Math.max(bounds.y,bounds.bottom-pad.bottom),bounds.width,Math.min(pad.bottom,bounds.height));}stripe(bounds.x,bounds.y,Math.min(pad.left,bounds.width),bounds.height);stripe(Math.max(bounds.x,bounds.right-pad.right),bounds.y,Math.min(pad.right,bounds.width),bounds.height);text=probe.region==='inset'?`Inner padding ${pad.left}px / ${pad.right}px`:`Padding ${pad.top}px / ${pad.right}px / ${pad.bottom}px / ${pad.left}px`;}
+    const label=document.createElement('span');label.textContent=text;Object.assign(label.style,{position:'absolute',visibility:'hidden',maxWidth:`${Math.max(0,innerWidth-8)}px`,boxSizing:'border-box',background:'#e5f5e9',color:'#225e37',border:'1px solid #6eac82',padding:'3px 6px',borderRadius:'4px',font:'600 11px/16px system-ui'});tint.append(label);
+    const position=spacingLabelPosition(bounds,label.offsetWidth,label.offsetHeight,innerWidth,innerHeight,24);
+    if(position)Object.assign(label.style,{left:`${position.left}px`,top:`${position.top}px`,visibility:'visible'});else label.remove();
+  };
   const insertionHighlight = makeHighlight(true);
   const setSelected = (target: PreviewTarget | null) => {
     const changed = !equalTarget(selected, target);
@@ -135,7 +168,7 @@ export function mountPreviewPencils(
     if(target?.accordion?.rowId){const outer=nodeFor({...target,accordion:undefined});const details=outer?.querySelector<HTMLDetailsElement>(`details[data-proof-accordion-item="${CSS.escape(target.accordion.itemId)}"]`);if(details)details.open=true;}
     if (target) rememberedSelection.set(current.id, target);
     else rememberedSelection.delete(current.id);
-    if (changed) previousPosition = '';
+    if (changed) {previousPosition = '';clearSpacing();}
     schedule();
   };
   const activateTarget = (target: PreviewTarget) => {
@@ -387,7 +420,13 @@ export function mountPreviewPencils(
       if (typeof event.data.siteId === 'string' && (!siteId || siteId === event.data.siteId)) { siteId = event.data.siteId; requestSelection(); }
       return;
     }
-    if (event.data.type !== 'proofadmin-preview-selection' || !siteId || event.data.siteId !== siteId) return;
+    if(event.data.type==='proofadmin-preview-spacing'){
+      if(event.data.probe===null){clearSpacing();schedule();return;}
+      const probe=parseSpacingProbe(event.data.probe),target=validTarget(event.data.target),coords=target?.accordion??target;
+      if(spacingEnabled&&probe&&target&&coords?.rowId===probe.rowId&&coords.columnId===probe.columnId&&!coords.elementId){spacingProbe={target,probe};schedule();}return;
+    }
+    if (event.data.type !== 'proofadmin-preview-selection'  || !siteId || event.data.siteId !== siteId) return;
+    spacingEnabled=event.data.rowColumnSpacing===true;if(!spacingEnabled)clearSpacing();
     inlineEnabled=event.data.inlineEditing===true;
     textStylesEnabled=event.data.textSemanticStyles===true;
     accordionEnabled=event.data.accordion===true;answerLayoutsEnabled=event.data.accordionAnswerLayouts===true;
@@ -422,6 +461,11 @@ export function mountPreviewPencils(
       outlineBounds=new DOMRect(left-8,top-8,right-left+16,bottom-top+16);
     }
     placeHighlight(selectionHighlight, outlineBounds);
+    const selectedCoords=selected?.accordion??selected,kind=selectedCoords?.elementId?'':selectedCoords?.columnId?'Column':selectedCoords?.rowId?'Row':'';
+    selectionTab.style.display=kind&&outlineBounds&&visibleBounds(outlineBounds)?'block':'none';selectionTab.textContent=kind;
+    selectionHighlight.style.borderWidth=kind?'0':'2px';selectionHighlight.style.outline=kind?'1px solid #2473bb':'none';selectionHighlight.style.outlineOffset=kind?'1px':'0';
+    if(kind&&outlineBounds){const position=spacingLabelPosition(outlineBounds,selectionTab.offsetWidth,selectionTab.offsetHeight,innerWidth,innerHeight);if(position){selectionTab.style.left=`${position.left}px`;selectionTab.style.top=`${position.top}px`;}else selectionTab.style.display='none';}
+    drawSpacing();
     if (selected && selectionBounds && focus) {
       const next = JSON.stringify([selected, asBounds(selectionBounds)]);
       if (next !== previousPosition) { previousPosition = next; focus(selected, asBounds(selectionBounds), 'position'); }
