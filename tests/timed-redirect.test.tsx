@@ -30,3 +30,11 @@ it('passes the opt-in through the actual website renderer while the private prev
  verify(!renderToStaticMarkup(createElement(Website,props)).includes('data-delay-seconds'));
  verify(renderToStaticMarkup(createElement(Website,{...props,publishedMode:true})).includes('data-delay-seconds="10"'));
 });
+
+it('retains optional hidden presentation through the canonical parser, resolver and public markup',()=>{
+ const parsed=contentSchema.parse({...source,timedRedirect:{...settingsForPresentation(),showCountdown:false}});if(parsed.kind!=='page')throw Error('fixture');
+ const redirect=resolveTimedRedirect(sourceId,parsed,documents);verify(redirect?.showCountdown===false&&redirect.delaySeconds===10);
+ const html=renderToStaticMarkup(createElement(TimedRedirect,{...redirect!,publishedMode:true}));verify(html.includes('data-presentation="hidden"')&&html.includes('data-redirect-cancel')&&html.includes('/welcome/next'));
+ verify(renderToStaticMarkup(createElement(TimedRedirect,{...redirect!}))==='');
+});
+function settingsForPresentation(){return {enabled:true,destination:{kind:'page' as const,value:targetId},delaySeconds:10};}
